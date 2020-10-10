@@ -9,7 +9,7 @@
 ?>
 <div class="main container two-columns-left">
 	<div class="col-main account_center">
-		<?= Yii::$service->page->widget->render('flashmessage'); ?>			
+		<?= Yii::$service->page->widget->render('base/flashmessage'); ?>			
 		<div class="std">
 			<div class="page-title">
 				<h2><?= Yii::$service->page->translate->__('Contact Information'); ?></h2>
@@ -49,7 +49,7 @@
 						<li>
 							<label for="email" class="required"><em>*</em><?= Yii::$service->page->translate->__('Comment'); ?></label>
 							<div class="input-box">
-								<textarea name="editForm[comment]" id="contacts_comment"><?= $comment ?></textarea>
+								<textarea name="editForm[comment]" id="contacts_comment" style="padding:10px;"><?= $comment ?></textarea>
 								<span id="contacts_comment_span"></span>
 							</div>
 						</li>
@@ -58,7 +58,7 @@
 							<label for="pass" class="required customertitle"><em>*</em><?= Yii::$service->page->translate->__('Captcha'); ?></label>
 							<div class="input-box login_box">
 								<input class="verification_code_input" maxlength="4" name="sercrity_code" value="" type="text">
-									<img class="login-captcha-img"  title="click refresh" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+									<img class="login-captcha-img"  title="click refresh" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
 									<i class="refresh-icon"></i>
 								<br>
 								<script>
@@ -77,7 +77,7 @@
 					</ul>
 				</div>
 			<div class="buttons-set">
-			   <button type="submit" title="Save" class="button" ><span><span><?= Yii::$service->page->translate->__('Contact Us'); ?></span></span></button>
+			   <button type="submit" title="Save" class="button " ><span><span><?= Yii::$service->page->translate->__('Contact Us'); ?></span></span></button>
 			</div>
 		</form>
 		</div>

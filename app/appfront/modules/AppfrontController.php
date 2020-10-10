@@ -30,6 +30,7 @@ class AppfrontController extends FecController
      */
     public function init()
     {
+        parent::init();
         /**
          * 如果模板路径没有配置，则配置模板路径
          */
@@ -52,7 +53,7 @@ class AppfrontController extends FecController
     }
 
     /**
-     * @property $blockName | String
+     * @param $blockName | String
      * get current block
      * 这个函数的controller中得到block文件，譬如：
      * cms模块的ArticleController的actinIndex()方法中使用$this->getBlock()->getLastData()方法，
@@ -82,8 +83,8 @@ class AppfrontController extends FecController
     }
 
     /**
-     * @property $view|string , (only) view file name ,by this module id, this controller id , generate view relative path.
-     * @property $params|Array,
+     * @param $view|string , (only) view file name ,by this module id, this controller id , generate view relative path.
+     * @param $params|Array,
      * 这个是fecshop重写的render函数，根据fecshop的多模板机制
      * 首先在高级别的模板中找view文件，如果找不到，按照模板路径优先级依次查找
      * 直到找到view'文件。
@@ -99,13 +100,18 @@ class AppfrontController extends FecController
     }
 
     /**
-     * @property $view|string 
+     * @param $view|string 
      * Get current layoutFile absolute path from mutil theme dir by protity.
      * 首先在高级别的模板中找view文件，如果找不到，按照模板路径优先级依次查找
      * 直到找到view'文件。
      */
     public function findLayoutFile($view)
     {
+        $layoutFileStr = Yii::$service->page->theme->layoutFile;
+        if (substr($layoutFileStr, 0, 1) == '@') {
+            
+            return Yii::getAlias($layoutFileStr);
+        }
         $layoutFile = '';
         $relativeFile = 'layouts/'.Yii::$service->page->theme->layoutFile;
         $absoluteDir = Yii::$service->page->theme->getThemeDirArr();

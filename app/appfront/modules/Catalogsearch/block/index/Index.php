@@ -53,17 +53,30 @@ class Index
         //echo $this->_productCount;
         return [
             'searchText'        => $this->_searchText,
-            'title'        => $this->_title,
-            'name'            => Yii::$service->store->getStoreAttrVal($this->_category['name'], 'name'),
-            'image'            => $this->_category['image'] ? Yii::$service->category->image->getUrl($this->_category['image']) : '',
-            'description'    => Yii::$service->store->getStoreAttrVal($this->_category['description'], 'description'),
-            'products'        => $products,
-            'query_item'    => $this->getQueryItem(),
-            'product_page'    => $this->getProductPage(),
-            'refine_by_info'=> $this->getRefineByInfo(),
-            'filter_info'    => $this->getFilterInfo(),
-            'filter_price'    => $this->getFilterPrice(),
+            'title'             => $this->_title,
+            'name'              => Yii::$service->store->getStoreAttrVal($this->_category['name'], 'name'),
+            'image'             => $this->_category['image'] ? Yii::$service->category->image->getUrl($this->_category['image']) : '',
+            'description'       => Yii::$service->store->getStoreAttrVal($this->_category['description'], 'description'),
+            'products'          => $products,
+            'query_item'        => $this->getQueryItem(),
+            'product_page'      => $this->getProductPage(),
+            'refine_by_info'    => $this->getRefineByInfo(),
+            'filter_info'       => $this->getFilterInfo(),
+            'filter_price'      => $this->getFilterPrice(),
+            'traceSearchData'   => $this->getTraceSearchData(),
         ];
+    }
+    
+    protected function getTraceSearchData(){
+        if (Yii::$service->page->trace->traceJsEnable && $this->_searchText){
+            $arr = [
+                'text'       => $this->_searchText,
+                'result_qty' => $this->_productCount ? $this->_productCount : 0,
+            ];
+            return json_encode($arr);
+        } else {
+            return '';
+        }
     }
     /**
      * 得到toolbar的分页部分
@@ -317,18 +330,18 @@ class Index
     protected function getSearchProductColl()
     {
         $select = [
-            'sku', 'spu', 'name', 'image',
+            'product_id','sku', 'spu', 'name', 'image',
             'price', 'special_price',
             'special_from', 'special_to',
-            'url_key', 'score',
+            'url_key', 'score', 'reviw_rate_star_average', 'review_count'
         ];
         $where = $this->_where;
         $search_text = Yii::$app->controller->module->params['search_query'];
         $pageNum = $this->getPageNum();
         $numPerPage = $this->getNumPerPage();
         $product_search_max_count = Yii::$app->controller->module->params['product_search_max_count'];
-
-        return Yii::$service->search->getSearchProductColl($select, $where, $pageNum, $numPerPage, $product_search_max_count);
+        $filterAttr = $this->getFilterAttr();
+        return Yii::$service->search->getSearchProductColl($select, $where, $pageNum, $numPerPage, $product_search_max_count, $filterAttr);
     }
     /**
      * 初始化where

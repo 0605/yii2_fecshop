@@ -14,7 +14,7 @@
 		<?= Yii::$service->page->translate->__('Login'); ?>
 	</a>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>	
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>	
 <div class="list-block customer-login  customer-register">
 	<form action="<?= Yii::$service->url->getUrl('customer/account/register'); ?>" method="post" id="register-form" class="account-form">
 		<?= \fec\helpers\CRequest::getCsrfInputHtml();  ?>
@@ -81,15 +81,16 @@
 						<div class="item-media"><i class="icon icon-form-password"></i></div>
 						<div class="item-inner">
 							<div class="item-input">
-								<input placeholder="captcha" type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"><img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
-								 <span class="icon icon-refresh"></span>
+								<input placeholder="captcha" type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input">
+                                <img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+								<span class="icon icon-refresh"></span>
 							</div>
 						</div>
 					</div>
 				<script>
 					<?php $this->beginBlock('register_captcha_onclick_refulsh') ?>  
 					$(document).ready(function(){
-						$(".refresh-icon").click(function(){
+						$(".icon-refresh").click(function(){
 							$(this).parent().find("img").click();
 						});
 					});
@@ -133,7 +134,32 @@ $passwordMatchValidate 		= Yii::$service->page->translate->__('Please make sure 
 <script>
 <?php $this->beginBlock('customer_account_register') ?>  
 $(document).ready(function(){
-	
+	$(".email_register_resend").click(function(){
+        emailRegisterResendUrl = "<?= Yii::$service->url->getUrl('customer/account/resendregisteremail') ?>";
+        $.ajax({
+            async:true,
+            timeout: 6000,
+            dataType: 'json', 
+            type:'get',
+            data: {
+                "email": "<?= $email ?>"
+            },
+            url:emailRegisterResendUrl,
+            success:function(data, textStatus){ 
+                // 
+                if (data.resendStatus == 'success') {
+                    //$(".resend_text").html('resend register email success');
+                    alert("<?= Yii::$service->page->translate->__('resend register email success') ?>")
+                } else {
+                    //$(".resend_text").html('resend register email fail');
+                    alert("<?= Yii::$service->page->translate->__('resend register email fail') ?>")
+                }
+            },
+            error:function (XMLHttpRequest, textStatus, errorThrown){}
+        });
+        
+        
+    });
 	$("#js_registBtn").click(function(){
 		validate = 1;
 		$(".validation-advice").remove();
@@ -214,7 +240,6 @@ $(document).ready(function(){
 				validate = 0;		
 			}
 		}
-		
 		
 		if(validate){
 		//	alert("validate success");

@@ -50,58 +50,111 @@ class Index
     }
     public function getLastData()
     {
-        $productImgSize = Yii::$app->controller->module->params['productImgSize'];
-        $productImgMagnifier = Yii::$app->controller->module->params['productImgMagnifier'];
-        if(!$this->initProduct()){
+        $reviewHelper = $this->_reviewHelper;
+        //$productImgSize = Yii::$app->controller->module->params['productImgSize'];
+        
+        $appName = Yii::$service->helper->getAppName();
+        $product_middle_img_width = Yii::$app->store->get($appName.'_catalog','product_middle_img_width');
+        if (!$this->initProduct()) {
             Yii::$service->url->redirect404();
             return;
         }
-        $reviewHelper = $this->_reviewHelper;
+        $productPrimaryKey = Yii::$service->product->getPrimaryKey();
+        
         $reviewHelper::initReviewConfig();
-        $ReviewAndStarCount = $reviewHelper::getReviewAndStarCount($this->_product);
-        list($review_count, $reviw_rate_star_average) = $ReviewAndStarCount;
+        list($review_count, $reviw_rate_star_average, $reviw_rate_star_info) = $reviewHelper::getReviewAndStarCount($this->_product);
         $this->filterProductImg($this->_product['image']);
-        $groupAttr = Yii::$service->product->getGroupAttr($this->_product['attr_group']);
-        $groupAttrArr = $this->getGroupAttrArr($groupAttr);
+        $groupAttrInfo = Yii::$service->product->getGroupAttrInfo($this->_product['attr_group']);
+        $groupAttrArr = $this->getGroupAttrArr($groupAttrInfo);
         return [
             'groupAttrArr'              => $groupAttrArr,
             'name'                      => Yii::$service->store->getStoreAttrVal($this->_product['name'], 'name'),
             'image_thumbnails'          => $this->_image_thumbnails,
             'image_detail'              => $this->_image_detail,
             'sku'                       => $this->_product['sku'],
+            'main_img'                       => isset($this->_product['image']['main']['image']) ? $this->_product['image']['main']['image'] : '',
+            'package_number'            => $this->_product['package_number'],
             'spu'                       => $this->_product['spu'],
             'attr_group'                => $this->_product['attr_group'],
             'review_count'              => $review_count,
             'reviw_rate_star_average'   => $reviw_rate_star_average,
+            'reviw_rate_star_info'      => $reviw_rate_star_info,
             'price_info'                => $this->getProductPriceInfo(),
             'tier_price'                => $this->_product['tier_price'],
             'media_size' => [
-                'small_img_width'       => $productImgSize['small_img_width'],
-                'small_img_height'      => $productImgSize['small_img_height'],
-                'middle_img_width'      => $productImgSize['middle_img_width'],
+                'middle_img_width'      => $product_middle_img_width,
             ],
-            'productImgMagnifier'       => $productImgMagnifier,
             'options'                   => $this->getSameSpuInfo(),
             'custom_option'             => $this->_product['custom_option'],
             'description'               => Yii::$service->store->getStoreAttrVal($this->_product['description'], 'description'),
-            '_id'                       => $this->_product['_id'],
+            '_id'                       => $this->_product[$productPrimaryKey],
             'buy_also_buy'              => $this->getProductBySkus($skus),
         ];
     }
-    public function getGroupAttrArr($groupAttr){
+    
+    public function getGroupAttrArr($groupAttrInfo){
         $gArr = [];
-        if(is_array($groupAttr)){
-            foreach($groupAttr as $attr){
-                if(isset($this->_product[$attr]) && $this->_product[$attr]){
-                    $gArr[$attr] = $this->_product[$attr];
+        if ($this->_product['brand_id']) {
+            $brandName = Yii::$service->page->translate->__('brand');
+            $gArr[$brandName] = Yii::$service->product->brand->getBrandNameById($this->_product['brand_id']);
+        }
+        // 增加重量，长宽高，体积重等信息
+        if ($this->_product['weight']) {
+            $weightName = Yii::$service->page->translate->__('weight');
+            $gArr[$weightName] = $this->_product['weight'].'g';
+        }
+        if ($this->_product['long']) {
+            $longName = Yii::$service->page->translate->__('long');
+            $gArr[$longName] = $this->_product['long'].' Cm';
+        }
+        if ($this->_product['width']) {
+            $widthName = Yii::$service->page->translate->__('width');
+            $gArr[$widthName] = $this->_product['width'].' Cm';
+        }
+        if ($this->_product['high']) {
+            $highName = Yii::$service->page->translate->__('high');
+            $gArr[$highName] = $this->_product['high'].' Cm';
+        }
+        if ($this->_product['volume_weight']) {
+            $volumeWeightName = Yii::$service->page->translate->__('volume weight');
+            $gArr[$volumeWeightName] = $this->_product['volume_weight'].' g';
+        }
+        if (is_array($groupAttrInfo)) {
+            foreach ($groupAttrInfo as $attr => $info) {
+                //var_dump($attr);
+                //var_dump($info);
+                if (isset($this->_product[$attr]) && $this->_product[$attr]) {
+                    $attrVal = $this->_product[$attr];
+                    // get translate 
+                    if (isset($info['display']['lang']) && $info['display']['lang'] && is_array($attrVal)) {
+                        $attrVal = Yii::$service->store->getStoreAttrVal($attrVal, $attr);
+                    } else if ($attrVal && !is_array($attrVal)) {
+                        $attrVal = Yii::$service->page->translate->__($attrVal);
+                    }
+                    $attr = Yii::$service->page->translate->__($attr);
+                    $gArr[$attr] = $attrVal;
+                } else if (isset($this->_product['attr_group_info']) && is_array($this->_product['attr_group_info'])) {
+                    $attr_group_info = $this->_product['attr_group_info'];
+                    if (isset($attr_group_info[$attr]) && $attr_group_info[$attr]) {
+                        $attrVal = $attr_group_info[$attr];
+                        // get translate 
+                        if (isset($info['display']['lang']) && $info['display']['lang'] && is_array($attrVal)) {
+                            $attrVal = Yii::$service->store->getStoreAttrVal($attrVal, $attr);
+                        } else if ($attrVal && !is_array($attrVal)) {
+                            $attrVal = Yii::$service->page->translate->__($attrVal);
+                        }
+                        $attr = Yii::$service->page->translate->__($attr);
+                        $gArr[$attr] = $attrVal;
+                    }
                 }
             }
         }
-        //var_dump($gArr);
+        
         return $gArr;
     }
+    
     /**
-     * @property $product_images | Array ，产品的图片属性
+     * @param $product_images | Array ，产品的图片属性
      * 根据图片数组，得到橱窗图，和描述图
      * 橱窗图：在产品详细页面顶部，放大镜显示部分的产品列表
      * 描述图，在产品description文字描述后面显示的产品图片。
@@ -109,32 +162,31 @@ class Index
     public function filterProductImg($product_images){
         $this->_image_thumbnails        = $product_images;
         //$this->_image_detail['gallery'] = $product_images['gallery'];
-        if(isset($product_images['gallery']) && is_array($product_images['gallery'])){
+        if (isset($product_images['main']['is_detail']) && $product_images['main']['is_detail'] == 1 ) {
+            $this->_image_detail[] = $product_images['main'];
+        }
+        if (isset($product_images['gallery']) && is_array($product_images['gallery'])) {
             $thumbnails_arr = [];
-            $detail_arr     = [];
-            foreach($product_images['gallery'] as $one){
+            //$detail_arr     = [];
+            foreach ($product_images['gallery'] as $one) {
                 $is_thumbnails  = $one['is_thumbnails'];
                 $is_detail      = $one['is_detail'];
                 if($is_thumbnails == 1){
                     $thumbnails_arr[]   = $one;
                 }
                 if($is_detail == 1){
-                    $detail_arr[]       = $one;
+                    $this->_image_detail[]       = $one;
                 }
             }
             $this->_image_thumbnails['gallery'] = $thumbnails_arr;
-            $this->_image_detail     = $detail_arr;
+            //$this->_image_detail     = $detail_arr;
         }
-        if(isset($product_images['main']['is_detail']) && $product_images['main']['is_detail'] == 1 ){
-            $this->_image_detail[] = $product_images['main'];
-        }
-        
     }
     
     /**废弃
-     * @property $data | Array 和当前产品的spu相同，但sku不同的产品  数组。
-     * @property $current_size | String 当前产品的size值
-     * @property $current_color | String 当前产品的颜色值
+     * @param $data | Array 和当前产品的spu相同，但sku不同的产品  数组。
+     * @param $current_size | String 当前产品的size值
+     * @param $current_color | String 当前产品的颜色值
      * @return array 分别为
      *               $all_attr1 所有的颜色数组
      *               $all_attr2  所有的尺码数组
@@ -148,72 +200,62 @@ class Index
         $attr1_2_attr2 = [];
         $attr2_2_attr1 = [];
         //var_dump($data);
-        foreach ($data as $one) {
-            $attr1_val = isset($one[$attr1]) ? $one[$attr1] : '';
-            $attr2_val = isset($one[$attr2]) ? $one[$attr2] : '';
-            //echo $attr1_val;
-            //echo $size;
-            //echo '##';
-            $image = $one['image'];
-            $name = $one['name'];
-            $url_key = $one['url_key'];
-            if ($attr1_val || $attr2_val) {
-                if ($attr1_val) {
-                    $all_attr1[$attr1_val] = [
-                        'name'        => $name,
-                        'image'    => $image,
-                        'url_key'    => $url_key,
-                    ];
-                }
-                if ($attr2_val) {
-                    $all_attr2[$attr2_val] = [
-                        'name'        => $name,
-                        'image'    => $image,
-                        'url_key'    => $url_key,
-                    ];
-                }
-                //echo $attr2_val.'#'.$current_attr2;
-                //echo '<br/>';
-                if ($attr2_val && $current_attr2 == $attr2_val) {
-                    $attr1_2_attr2[$attr1_val] = [
-                        'name'        => $name,
-                        'image'    => $image,
-                        'url_key'    => $url_key,
-                    ];
-                }
-                if ($attr1_val && $current_attr1 == $attr1_val) {
-                    $attr2_2_attr1[$attr2_val] = [
-                        'name'        => $name,
-                        'image'    => $image,
-                        'url_key'    => $url_key,
-                    ];
+        if (is_array($data) && !empty($data)) {
+            foreach ($data as $one) {
+                $attr1_val = isset($one[$attr1]) ? $one[$attr1] : '';
+                $attr2_val = isset($one[$attr2]) ? $one[$attr2] : '';
+                //echo $attr1_val;
+                //echo $size;
+                //echo '##';
+                $image = $one['image'];
+                $name = $one['name'];
+                $url_key = $one['url_key'];
+                if ($attr1_val || $attr2_val) {
+                    if ($attr1_val) {
+                        $all_attr1[$attr1_val] = [
+                            'name'        => $name,
+                            'image'    => $image,
+                            'url_key'    => $url_key,
+                        ];
+                    }
+                    if ($attr2_val) {
+                        $all_attr2[$attr2_val] = [
+                            'name'        => $name,
+                            'image'    => $image,
+                            'url_key'    => $url_key,
+                        ];
+                    }
+                    //echo $attr2_val.'#'.$current_attr2;
+                    //echo '<br/>';
+                    if ($attr2_val && $current_attr2 == $attr2_val) {
+                        $attr1_2_attr2[$attr1_val] = [
+                            'name'        => $name,
+                            'image'    => $image,
+                            'url_key'    => $url_key,
+                        ];
+                    }
+                    if ($attr1_val && $current_attr1 == $attr1_val) {
+                        $attr2_2_attr1[$attr2_val] = [
+                            'name'        => $name,
+                            'image'    => $image,
+                            'url_key'    => $url_key,
+                        ];
+                    }
                 }
             }
         }
-
         return [$all_attr1, $all_attr2, $attr1_2_attr2, $attr2_2_attr1];
     }
 
     /**
-     * @property $select | Array ， 需要查询的字段。
+     * @param $select | Array ， 需要查询的字段。
      * 得到当前spu下面的所有的sku的数组、
      * 这个是为了产品详细页面的spu下面的产品切换，譬如同一spu下的不同的颜色尺码切换。
      */
     protected function getSpuData($select)
     {
         $spu = $this->_product['spu'];
-        $select = array_merge($select, $this->_productSpuAttrArr);
-
-        $filter = [
-            'select'    => $select,
-            'where'            => [
-                ['spu' => $spu],
-            ],
-            'asArray' => true,
-        ];
-        $coll = Yii::$service->product->coll($filter);
-
-        return $coll['coll'];
+        return Yii::$service->product->spuCollData($select, $this->_productSpuAttrArr, $spu);
     }
 
     /**
@@ -236,7 +278,12 @@ class Index
 
         $this->_currentSpuAttrValArr = [];
         foreach ($this->_productSpuAttrArr as $spuAttr) {
-            $spuAttrVal = $this->_product[$spuAttr];
+            if (isset($this->_product['attr_group_info']) && $this->_product['attr_group_info']) {  // mysql
+                $attr_group_info = $this->_product['attr_group_info'];
+                $spuAttrVal = $attr_group_info[$spuAttr];
+            } else {
+                $spuAttrVal = isset($this->_product[$spuAttr]) ? $this->_product[$spuAttr] : '';
+            }
             if ($spuAttrVal) {
                 $this->_currentSpuAttrValArr[$spuAttr] = $spuAttrVal;
             } else {
@@ -279,13 +326,11 @@ class Index
         $spuShowArr = [];
         foreach ($spuValColl as $spuAttr => $attrValArr) {
             $attr_coll = [];
-            foreach ($attrValArr as $attrVal) {
-                $attr_info = $this->getSpuAttrInfo($spuAttr, $attrVal, $reverse_val_spu);
-                $attr_coll[] = $attr_info;
-
-                //[
-                //    'attr_val' => $attr,
-                //];
+            if (is_array($attrValArr)) {
+                foreach ($attrValArr as $attrVal) {
+                    $attr_info = $this->getSpuAttrInfo($spuAttr, $attrVal, $reverse_val_spu);
+                    $attr_coll[] = $attr_info;
+                }
             }
             $spuShowArr[] = [
                 'label' => $spuAttr,
@@ -345,16 +390,17 @@ class Index
     protected function generateSpuReverseKey($one)
     {
         $reverse_key = '';
-        foreach ($this->_productSpuAttrArr as $spuAttr) {
-            $spuValColl[$spuAttr][] = $one[$spuAttr];
-            $reverse_key .= $one[$spuAttr];
+        if (is_array($this->_productSpuAttrArr)) {
+            foreach ($this->_productSpuAttrArr as $spuAttr) {
+                $spuValColl[$spuAttr][] = $one[$spuAttr];
+                $reverse_key .= $one[$spuAttr];
+            }
         }
-
         return  $reverse_key;
     }
 
     /**
-     *	@property $data | Array  各个尺码对应的产品数组
+     *	@param $data | Array  各个尺码对应的产品数组
      *  @return array 排序后的数组
      *		该函数，按照在配置中的size的顺序，将$data中的数据进行排序，让其按照尺码的由小到大的顺序
      * 		排列，譬如 ：s,m,l,xl,xxl,xxxl等
@@ -374,6 +420,12 @@ class Index
                 }
             }
             if (!empty($d_arr)) {
+                // 不在里面的规格属性（新建产品添加的规格属性），添加进去
+                foreach ($data as $size=>$d) {
+                    if (!isset($d_arr[$size])) {
+                        $d_arr[$size] = $data[$size];
+                    }
+                }
                 return $d_arr;
             }
         }
@@ -451,7 +503,9 @@ class Index
     // 面包屑导航
     protected function breadcrumbs($name)
     {
-        if (Yii::$app->controller->module->params['category_breadcrumbs']) {
+        $appName = Yii::$service->helper->getAppName();
+        $category_breadcrumbs = Yii::$app->store->get($appName.'_catalog','product_breadcrumbs');
+        if ($category_breadcrumbs == Yii::$app->store->enable) {
             $parent_info = Yii::$service->category->getAllParentInfo($this->_category['parent_id']);
             if (is_array($parent_info) && !empty($parent_info)) {
                 foreach ($parent_info as $info) {

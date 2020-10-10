@@ -7,7 +7,7 @@
  * @license http://www.fecshop.com/license/
  */
 
-namespace fecshop\app\appfront\modules\checkout\block\onepage;
+namespace fecshop\app\appfront\modules\Checkout\block\onepage;
 
 use Yii;
 
@@ -31,6 +31,10 @@ class Placeorder
      * 用户的支付方式.
      */
     public $_payment_method;
+    /**
+     * 订单备注信息.
+     */
+    public $_order_remark;
 
     public function getLastData()
     {
@@ -41,14 +45,24 @@ class Placeorder
              * 对传递的数据，去除掉非法xss攻击部分内容（通过\Yii::$service->helper->htmlEncode()）.
              */
             $post = \Yii::$service->helper->htmlEncode($post);
-            // 检查前台传递的数据的完整
+            // 如果是支付宝，那么更改货币为人民币
+            $alipay_payment_key = Yii::$service->payment->alipay->getAlipayHandle();
+            if($post['payment_method'] == $alipay_payment_key){
+                Yii::$service->page->currency->setCurrentCurrency2CNY(); 
+            }
+            // 如果是微信支付，那么更改货币为人民币（目前只有pc扫码支持微信支付）
+            $wxpay_payment_key = Yii::$service->payment->wxpay->getWxpayHandle();
+            if($post['payment_method'] == $wxpay_payment_key){
+                Yii::$service->page->currency->setCurrentCurrency2CNY(); 
+            }
+            
+	    // 检查前台传递的数据的完整
             if ($this->checkOrderInfoAndInit($post)) {
                 
                 // 如果游客用户勾选了注册账号，则注册，登录，并把地址写入到用户的address中
                 $gus_status = $this->guestCreateAndLoginAccount($post);
                 $save_address_status = $this->updateAddress($post);
                 if ($gus_status && $save_address_status) {
-                    
                     // 更新Cart信息
                     //$this->updateCart();
                     // 设置checkout type
@@ -59,8 +73,10 @@ class Placeorder
                     
                     $innerTransaction = Yii::$app->db->beginTransaction();
                     try {
+                        
                         # 生成订单，扣除库存，但是，不清空购物车。
-                        $genarateStatus = Yii::$service->order->generateOrderByCart($this->_billing, $this->_shipping_method, $this->_payment_method,false);
+                        $genarateStatus = Yii::$service->order->generateOrderByCart($this->_billing, $this->_shipping_method, $this->_payment_method, false, '', $this->_order_remark);
+                        
                         if ($genarateStatus) {
                             // 得到当前的订单信息
                             //$orderInfo = Yii::$service->order->getCurrentOrderInfo();
@@ -76,7 +92,7 @@ class Placeorder
                         } else {
                             $innerTransaction->rollBack();
                         }
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         $innerTransaction->rollBack();
                     }
                     
@@ -90,7 +106,7 @@ class Placeorder
     }
 
     /**
-     * @property $post|Array，前台传递参数数组。
+     * @param $post|Array，前台传递参数数组。
      * 如果游客选择了创建账户，并且输入了密码，则使用address email作为账号，
      * 进行账号的注册和登录。
      */
@@ -114,12 +130,12 @@ class Placeorder
             $passMin = Yii::$service->customer->getRegisterPassMinLength();
             $passMax = Yii::$service->customer->getRegisterPassMaxLength();
             if (strlen($customer_password) < $passMin) {
-                Yii::$service->helper->errors->add('password must Greater than '.$passMin);
+                Yii::$service->helper->errors->add('password must Greater than {min_password}', ['min_password' => $passMin]);
 
                 return false;
             }
             if (strlen($customer_password) > $passMax) {
-                Yii::$service->helper->errors->add('password must less than '.$passMax);
+                Yii::$service->helper->errors->add('password must less than {max_password}', ['max_password' => $passMax]);
 
                 return false;
             }
@@ -141,7 +157,7 @@ class Placeorder
     }
 
     /**
-     * @property $post | Array
+     * @param $post | Array
      * 登录用户，保存货运地址到customer address ，然后把生成的
      * address_id 写入到cart中。
      * shipping method写入到cart中
@@ -203,7 +219,7 @@ class Placeorder
     */
 
     /**
-     * @property $post | Array
+     * @param $post | Array
      * @return bool
      *              检查前台传递的信息是否正确。同时初始化一部分类变量
      */
@@ -259,11 +275,11 @@ class Placeorder
 
             return false;
         } else {
-            if (!Yii::$service->shipping->ifIsCorrect($shipping_method)) {
-                Yii::$service->helper->errors->add('shipping method is not correct');
-
-                return false;
-            }
+            //if (!Yii::$service->shipping->ifIsCorrect($shipping_method)) {
+            //    Yii::$service->helper->errors->add('shipping method is not correct');
+            //    
+            //    return false;
+            //}
         }
         // 验证支付方式
         if (!$payment_method) {
@@ -277,6 +293,22 @@ class Placeorder
                 return false;
             }
         }
+        
+        // 订单备注信息不能超过1500字符
+        $orderRemarkStrMaxLen = Yii::$service->order->orderRemarkStrMaxLen;
+        $order_remark = isset($post['order_remark']) ? $post['order_remark'] : '';
+        if ($order_remark && $orderRemarkStrMaxLen) {
+            $order_remark_strlen = strlen($order_remark);
+            if ($order_remark_strlen > $orderRemarkStrMaxLen) {
+                Yii::$service->helper->errors->add('order remark string length can not gt {orderRemarkStrMaxLen}', ['orderRemarkStrMaxLen' => $orderRemarkStrMaxLen]);
+                
+                return false;
+            } else {
+                // 去掉xss攻击字符，关于防止xss攻击的yii文档参看：http://www.yiichina.com/doc/guide/2.0/security-best-practices#fang-zhi-xss-gong-ji
+                $this->_order_remark = $order_remark;
+            }
+        }
+        
         $this->_shipping_method = $shipping_method;
         $this->_payment_method = $payment_method;
         Yii::$service->payment->setPaymentMethod($this->_payment_method);

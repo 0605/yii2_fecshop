@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -11,26 +12,32 @@ namespace fecshop\services\cms\staticblock;
 
 //use fecshop\models\mysqldb\cms\StaticBlock;
 use Yii;
+use fecshop\services\Service;
 
 /**
  * @author Terry Zhao <2358269014@qq.com>
  * @since 1.0
  */
-class StaticBlockMysqldb implements StaticBlockInterface
+class StaticBlockMysqldb extends Service implements StaticBlockInterface
 {
     public $numPerPage = 20;
+
     protected $_staticBlockModelName = '\fecshop\models\mysqldb\cms\StaticBlock';
+
     protected $_staticBlockModel;
+
     /**
      *  language attribute.
      */
     protected $_lang_attr = [
-            'title',
-            'content',
-        ];
+        'title',
+        'content',
+    ];
     
-    public function __construct(){
-        list($this->_staticBlockModelName,$this->_staticBlockModel) = Yii::mapGet($this->_staticBlockModelName);  
+    public function init()
+    {
+        parent::init();
+        list($this->_staticBlockModelName, $this->_staticBlockModel) = Yii::mapGet($this->_staticBlockModelName);
     }
     
     public function getPrimaryKey()
@@ -50,6 +57,7 @@ class StaticBlockMysqldb implements StaticBlockInterface
 
             return $one;
         } else {
+            
             return new $this->_staticBlockModelName();
         }
     }
@@ -95,7 +103,7 @@ class StaticBlockMysqldb implements StaticBlockInterface
                 $coll[$k] = $one;
             }
         }
-        //var_dump($one);
+        
         return [
             'coll' => $coll,
             'count'=> $query->limit(null)->offset(null)->count(),
@@ -103,7 +111,7 @@ class StaticBlockMysqldb implements StaticBlockInterface
     }
 
     /**
-     * @property $one|array
+     * @param $one|array
      * save $data to cms model,then,add url rewrite info to system service urlrewrite.
      */
     public function save($one)
@@ -111,14 +119,14 @@ class StaticBlockMysqldb implements StaticBlockInterface
         $currentDateTime = \fec\helpers\CDate::getCurrentDateTime();
         $primaryVal = isset($one[$this->getPrimaryKey()]) ? $one[$this->getPrimaryKey()] : '';
         if (!($this->validateIdentify($one))) {
-            Yii::$service->helper->errors->add('StaticBlock: identify存在，您必须定义一个唯一的identify ');
+            Yii::$service->helper->errors->add('Static block: identify exit, You must define a unique identify');
 
             return;
         }
         if ($primaryVal) {
             $model = $this->_staticBlockModel->findOne($primaryVal);
             if (!$model) {
-                Yii::$service->helper->errors->add('static block '.$this->getPrimaryKey().' is not exist');
+                Yii::$service->helper->errors->add('Static block {primaryKey} is not exist', ['primaryKey' => $this->getPrimaryKey()]);
 
                 return;
             }
@@ -153,6 +161,7 @@ class StaticBlockMysqldb implements StaticBlockInterface
         }
         $one = $query->one();
         if (!empty($one)) {
+            
             return false;
         }
 
@@ -173,10 +182,8 @@ class StaticBlockMysqldb implements StaticBlockInterface
             }
         } else {
             $id = $ids;
-            foreach ($ids as $id) {
-                $model = $this->_staticBlockModel->findOne($id);
-                $model->delete();
-            }
+            $model = $this->_staticBlockModel->findOne($id);
+            $model->delete();
         }
 
         return true;

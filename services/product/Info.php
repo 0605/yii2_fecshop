@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -20,15 +21,8 @@ use Yii;
  */
 class Info extends Service
 {
-    
-    //protected $_productModelName = '\fecshop\models\mongodb\Product';
-    //protected $_productModel;
-    
-    //public function __construct(){
-        //list($this->_productModelName,$this->_productModel) = \Yii::mapGet($this->_productModelName);  
-    //}
     /**
-     * @property $custome_option | Array
+     * @param $custome_option | Array
      * $custome_option = [
      *      "my_color" 	=> "red",
      *      "my_size" 	=> "M",
@@ -51,13 +45,14 @@ class Info extends Service
     }
 
     /**
-     * @property $custom_option | Array 前台传递的custom option 一维数组。
-     * @property $product_custom_option | Array  数据库中存储的产品custom_option的值
+     * @param $custom_option | Array 前台传递的custom option 一维数组。
+     * @param $product_custom_option | Array  数据库中存储的产品custom_option的值
      * 验证前台传递的custom option 是否正确。
      */
     public function validateProductCustomOption($custom_option, $product_custom_option)
     {
         if (empty($product_custom_option) && empty($custom_option)) {
+            
             return true; // 都为空，说明不需要验证。
         }
         if ($custom_option) {
@@ -70,6 +65,7 @@ class Info extends Service
             }
             foreach ($product_custom_option as $p_sku => $option) {
                 if ($p_sku == $co_sku) {
+                    
                     return true;
                 }
             }
@@ -84,12 +80,12 @@ class Info extends Service
      */
 
     /**
-     * @property $custom_option_arr | Array ， 用户选择提交数据，格式为
+     * @param $custom_option_arr | Array ， 用户选择提交数据，格式为
      *    [
      *        'color' => 'red',
      *        'size'  => 'L',
      *    ]
-     * @property $product_custom_option | Array ， 产品表中的custom_option属性值，譬如：
+     * @param $product_custom_option | Array ， 产品表中的custom_option属性值，譬如：
      *  [
      *      "black-s-s2-s3": [
      *          "my_color": "black",
@@ -117,6 +113,7 @@ class Info extends Service
                         }
                     }
                     if ($bool) {
+                        
                         return $co_sku;
                     }
                 }

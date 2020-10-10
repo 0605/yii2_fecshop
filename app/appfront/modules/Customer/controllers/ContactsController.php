@@ -18,7 +18,7 @@ use Yii;
  */
 class ContactsController extends AppfrontController
 {
-    //protected $_registerSuccessRedirectUrlKey = 'customer/account';
+    public $enableCsrfValidation = true;
 
     public function init()
     {
@@ -29,6 +29,7 @@ class ContactsController extends AppfrontController
     {
         $editForm = Yii::$app->request->post('editForm');
         if (!empty($editForm)) {
+            $editForm = \Yii::$service->helper->htmlEncode($editForm);
             $this->getBlock()->saveContactsInfo($editForm);
         }
         $data = $this->getBlock()->getLastData();

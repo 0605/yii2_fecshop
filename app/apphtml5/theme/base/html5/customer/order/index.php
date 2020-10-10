@@ -15,10 +15,9 @@
 		<h1 class='title'><?= Yii::$service->page->translate->__('Customer Order'); ?></h1>
 	</div>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>
 
 <div class="order_list">
-<?= Yii::$service->page->widget->render('flashmessage'); ?>
 
 	<div class="col-main account_center">
 		<div class="std">
@@ -29,7 +28,7 @@
 						<tr class="first last">
 							<th><?= Yii::$service->page->translate->__('Order #');?> </th>
 							<th><?= Yii::$service->page->translate->__('Date');?></th>
-							<th>operate</th>
+							<th><?= Yii::$service->page->translate->__('Operation');?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -58,8 +57,10 @@
 					</tbody>
 				</table>
 				<?php if($pageToolBar): ?>
-					<div class="pageToolbar">
-						<label class="title"><?= Yii::$service->page->translate->__('Page:');?></label><?= $pageToolBar ?>
+					<div class="pageToolbar customer_order">
+						<label class=""><?= Yii::$service->page->translate->__('Page:');?></label>
+                        <?= $pageToolBar ?>
+                        <div class="clear"></div>
 					</div>
 				<?php endif; ?>
 			</div>

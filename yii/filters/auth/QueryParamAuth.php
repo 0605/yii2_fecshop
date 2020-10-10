@@ -20,7 +20,7 @@ class QueryParamAuth extends YiiQueryParamAuth
 {
     
     /**
-     * ÖØĞ´¸Ã·½·¨¡£¸Ã·½·¨´Órequest headerÖĞ¶ÁÈ¡access-token¡£
+     * é‡å†™è¯¥æ–¹æ³•ã€‚è¯¥æ–¹æ³•ä»request headerä¸­è¯»å–access-tokenã€‚
      */
     public function authenticate($user, $request, $response)
     {   
@@ -28,8 +28,15 @@ class QueryParamAuth extends YiiQueryParamAuth
         if($identity){
             return $identity;
         }else{
-            $result = ['status' => 'ERROR', 'code' => 401,'message' => 'token is time out'];
-            Yii::$app->response->data=json_encode($result);
+            $cors = Yii::$service->helper->appserver->getYiiAuthCors();
+            if (is_array($cors)) {
+                foreach ($cors as $c) {
+                    header($c);
+                }
+            }
+            $code = Yii::$service->helper->appserver->account_no_login_or_login_token_timeout;
+            $result = [ 'code' => $code,'message' => 'token is time out'];
+            Yii::$app->response->data = $result;
             Yii::$app->response->send();
             Yii::$app->end();
         }

@@ -16,7 +16,7 @@ use Yii;
  * @author Terry Zhao <2358269014@qq.com>
  * @since 1.0
  */
-class Add
+class Add extends \yii\base\BaseObject
 {
     protected $_add_captcha;
     /**
@@ -25,8 +25,9 @@ class Add
     protected $_reviewHelperName = '\fecshop\app\appfront\modules\Catalog\helpers\Review';
     protected $_reviewHelper;
 
-    public function __construct()
+    public function init()
     {
+        parent::init();
         /**
          * 通过Yii::mapGet() 得到重写后的class类名以及对象。Yii::mapGet是在文件@fecshop\yii\Yii.php中
          */
@@ -40,8 +41,10 @@ class Add
     public function getAddCaptcha()
     {
         if (!$this->_add_captcha) {
-            $reviewParam = Yii::$app->getModule('catalog')->params['review'];
-            $this->_add_captcha = isset($reviewParam['add_captcha']) ? $reviewParam['add_captcha'] : false;
+            $appName = Yii::$service->helper->getAppName();
+            $addCaptcha = Yii::$app->store->get($appName.'_catalog','review_add_captcha');
+            // $reviewParam = Yii::$app->getModule('catalog')->params['review'];
+            $this->_add_captcha = ($addCaptcha == Yii::$app->store->enable) ? true : false;
         }
 
         return $this->_add_captcha;
@@ -90,7 +93,7 @@ class Add
         ];
     }
     /**
-     * @property $editForm | Array
+     * @param $editForm | Array
      * @return boolean ，保存评论信息
      */
     public function saveReview($editForm)
@@ -100,48 +103,54 @@ class Add
         if (!$product_id) {
             Yii::$service->page->message->addError(['Product id can not empty']);
 
-            return;
+            return false;
         }
         $rate_star = isset($editForm['rate_star']) ? $editForm['rate_star'] : '';
         if (!$rate_star) {
             Yii::$service->page->message->addError(['Rate Star can not empty']);
 
-            return;
+            return false;
         }
         $name = isset($editForm['name']) ? $editForm['name'] : '';
         if (!$name) {
             Yii::$service->page->message->addError(['Your Name can not empty']);
 
-            return;
+            return false;
         }
         $summary = isset($editForm['summary']) ? $editForm['summary'] : '';
         if (!$summary) {
             Yii::$service->page->message->addError(['Summary can not empty']);
 
-            return;
+            return false;
         }
         $review_content = isset($editForm['review_content']) ? $editForm['review_content'] : '';
         if (!$review_content) {
             Yii::$service->page->message->addError(['Review content can not empty']);
 
-            return;
+            return false;
         }
         // captcha validate
         $captcha = isset($editForm['captcha']) ? $editForm['captcha'] : '';
         if ($add_captcha && !$captcha) {
             Yii::$service->page->message->addError(['Captcha can not empty']);
 
-            return;
+            return false;
         } elseif ($captcha && $add_captcha && !\Yii::$service->helper->captcha->validateCaptcha($captcha)) {
             Yii::$service->page->message->addError(['Captcha is not right']);
 
-            return;
+            return false;
         }
         $product = Yii::$service->product->getByPrimaryKey($product_id);
         if (!$product['spu']) {
             Yii::$service->page->message->addError('product _id:'.$product_id.'  is not exist in product collection');
 
-            return;
+            return false;
+        }
+        // 用户是否有添加这个产品的权限
+        if (!Yii::$service->product->review->isReviewRole($product_id)) {
+            Yii::$service->page->message->addError('product _id:'.$product_id.'  , you review this product only after ordered it');
+            
+            return false;
         }
         $editForm['spu'] = $product['spu'];
         $editForm['status'] = $product['spu'];
@@ -151,7 +160,7 @@ class Add
         return true;
     }
     /**
-     * @property $product | String Or Object
+     * @param $product | String Or Object
      * 得到产品的价格信息
      */
     protected function getProductPriceInfo($product)

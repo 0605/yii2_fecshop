@@ -8,7 +8,7 @@
  */
 ?>
 <div class="main container one-column">
-<?= Yii::$service->page->widget->render('flashmessage'); ?>
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>
 	<div class="col-main">
 		<div class="std">
 			<div class="product-Reviews_top">
@@ -24,15 +24,7 @@
 					</div>
 					<div class="product_info review_add_price">
 						<div class="price_info">
-							<?php # 价格部分
-								$priceView = [
-									'view'	=> 'catalog/product/index/price.php'
-								];
-								$priceParam = [
-									'price_info' => $price_info,
-								];
-							?>
-							<?= Yii::$service->page->widget->render($priceView,$priceParam); ?>
+                            <?= Yii::$service->page->widget->render('product/price',['price_info' => $price_info]); ?>
 						</div>
 					</div>
 				</div>
@@ -97,7 +89,7 @@
 								<label for="captcha" class="required"><em>*</em><?= Yii::$service->page->translate->__('Captcha');?></label>
 								<div class="input-box login-captcha">
 									<input type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"> 
-									<img class="login-captcha-img"  title="点击刷新" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+									<img class="login-captcha-img"  title="点击刷新" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
 									<i class="refresh-icon"></i>
 								</div>
 								<script>

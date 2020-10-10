@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -22,6 +23,13 @@ class Body extends BodyBase
     {
         $identity = $this->params;
         $resetUrl = Yii::$service->url->getUrl('customer/account/resetpassword', ['resetToken'=>$identity['password_reset_token']]);
+        if (Yii::$service->store->isApiStore()) {
+            if ($homeUrl = Yii::$service->helper->getAppServiceDomain()) {
+            } else {
+                $homeUrl = Yii::$service->url->getUrl('/');
+            }
+            $resetUrl = $homeUrl.'#/customer/account/resetpassword/'.$identity['password_reset_token'];
+        }
         return [
             'name'                  => $identity['firstname'].' '. $identity['lastname'],
             'email'                 => $identity['email'],

@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -19,23 +20,34 @@ use fecshop\services\Service;
 class Captcha extends Service
 {
     public $charset = 'abcdefghkmnprstuvwxyzABCDEFGHKMNPRSTUVWXYZ0123456789'; //随机因子
+
     public $codelen = 4;    //验证码长度
+
     public $width   = 130;  //宽度
+
     public $height  = 50;   //高度
+
     public $fontsize= 20;  //指定字体大小
+
     public $case_sensitive = false;
+
     private $fontcolor; //指定字体颜色
+
     private $code; //验证码
+
     private $img; //图形资源句柄
+
     private $font; //指定的字体
+
     private $_sessionKey = 'captcha_session_key';
 
     /**
      *  1. 生成图片，.
      */
     //构造方法初始化
-    public function __construct()
+    public function init()
     {
+        parent::init();
         $this->font = dirname(__FILE__).'/captcha/Elephant.ttf'; //注意字体路径要写对，否则显示不了图片
     }
 
@@ -93,6 +105,22 @@ class Captcha extends Service
         imagepng($this->img);
         imagedestroy($this->img);
     }
+    
+    //对外生成
+    public function doBase64img()
+    {
+        $this->createBg();
+        $this->createCode();
+        $this->createLine();
+        $this->createFont();
+        ob_start();
+        imagepng($this->img);
+        imagedestroy($this->img);
+        $fileContent = ob_get_contents();
+        ob_end_clean();
+        $this->setSessionCode();
+        return base64_encode($fileContent);
+    }
 
     //对外生成
     public function doimg()
@@ -101,8 +129,9 @@ class Captcha extends Service
         $this->createCode();
         $this->createLine();
         $this->createFont();
-        $this->outPut();
         $this->setSessionCode();
+        session_commit();
+        $this->outPut();
     }
 
     public function setSessionCode()
@@ -115,8 +144,10 @@ class Captcha extends Service
     public function getCode($code)
     {
         if (!$this->case_sensitive) {
+            
             return strtolower($code);
         } else {
+            
             return $this->code;
         }
     }

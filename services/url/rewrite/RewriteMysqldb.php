@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -9,32 +10,37 @@
 
 namespace fecshop\services\url\rewrite;
 
-//use fecshop\models\mysqldb\url\UrlRewrite;
 use Yii;
+use fecshop\services\Service;
 use yii\base\InvalidValueException;
 
 /**
  * @author Terry Zhao <2358269014@qq.com>
  * @since 1.0
  */
-class RewriteMysqldb implements RewriteInterface
+class RewriteMysqldb extends Service implements RewriteInterface
 {
     public $numPerPage = 20;
+
     /**
      *  language attribute.
      */
     protected $_lang_attr = [
 
-        ];
-    
+    ];
+
     protected $_urlRewriteModelName = '\fecshop\models\mysqldb\url\UrlRewrite';
+
     protected $_urlRewriteModel;
-    
-    public function __construct(){
-        list($this->_urlRewriteModelName,$this->_urlRewriteModel) = \Yii::mapGet($this->_urlRewriteModelName);  
+
+    public function init()
+    {
+        parent::init();
+        list($this->_urlRewriteModelName, $this->_urlRewriteModel) = \Yii::mapGet($this->_urlRewriteModelName);
     }
+
     /**
-     * @property $urlKey | string 
+     * @param $urlKey | string
      * 通过重写后的urlkey字符串，去url_rewrite表中查询，找到重写前的url字符串。
      */
     public function getOriginUrl($urlKey)
@@ -42,7 +48,8 @@ class RewriteMysqldb implements RewriteInterface
         $UrlData = $this->_urlRewriteModel->find()->where([
             'custom_url_key' => $urlKey,
         ])->asArray()->one();
-        if ($UrlData['custom_url_key']) {
+        if ($UrlData) {
+            
             return $UrlData['origin_url'];
         }
     }
@@ -66,6 +73,7 @@ class RewriteMysqldb implements RewriteInterface
 
             return $one;
         } else {
+            
             return new $this->_urlRewriteModelName();
         }
     }
@@ -99,7 +107,7 @@ class RewriteMysqldb implements RewriteInterface
                 $coll[$k] = $one;
             }
         }
-        //var_dump($one);
+        
         return [
             'coll' => $coll,
             'count'=> $query->limit(null)->offset(null)->count(),
@@ -107,7 +115,7 @@ class RewriteMysqldb implements RewriteInterface
     }
 
     /**
-     * @property $one|array
+     * @param $one|array
      * save $data to cms model,then,add url rewrite info to system service urlrewrite.
      */
     public function save($one)
@@ -116,7 +124,7 @@ class RewriteMysqldb implements RewriteInterface
         if ($primaryVal) {
             $model = $this->_urlRewriteModel->findOne($primaryVal);
             if (!$model) {
-                Yii::$service->helper->errors->add('UrlRewrite '.$this->getPrimaryKey().' is not exist');
+                Yii::$service->helper->errors->add('UrlRewrite {primaryKey} is not exist', ['primaryKey'=>$this->getPrimaryKey()]);
 
                 return;
             }
@@ -128,8 +136,9 @@ class RewriteMysqldb implements RewriteInterface
 
         return true;
     }
+
     /**
-     * @property $ids | Array or Int 
+     * @param $ids | Array or Int
      * 删除相应的url rewrite 记录
      */
     public function remove($ids)
@@ -148,16 +157,14 @@ class RewriteMysqldb implements RewriteInterface
                         $url_key = $model['url_key'];
                         $model->delete();
                     } else {
-
-                        //throw new InvalidValueException("ID:$id is not exist.");
-                        Yii::$service->helper->errors->add("UrlRewrite Remove Errors:ID $id is not exist.");
+                        Yii::$service->helper->errors->add('UrlRewrite Remove Errors:ID {id} is not exist.', ['id' => $id]);
                         $innerTransaction->rollBack();
 
                         return false;
                     }
                 }
                 $innerTransaction->commit();
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 Yii::$service->helper->errors->add('UrlRewrite Remove Errors: transaction rollback');
                 $innerTransaction->rollBack();
 
@@ -172,12 +179,12 @@ class RewriteMysqldb implements RewriteInterface
                     $url_key = $model['url_key'];
                     $model->delete();
                     $innerTransaction->commit();
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     Yii::$service->helper->errors->add('UrlRewrite Remove Errors: transaction rollback');
                     $innerTransaction->rollBack();
                 }
             } else {
-                Yii::$service->helper->errors->add("UrlRewrite Remove Errors:ID:$id is not exist.");
+                Yii::$service->helper->errors->add('UrlRewrite Remove Errors:ID:{id} is not exist.', ['id' => $id]);
 
                 return false;
             }
@@ -185,8 +192,9 @@ class RewriteMysqldb implements RewriteInterface
 
         return true;
     }
+
     /**
-     * @property $time | Int
+     * @param $time | Int
      * 根据updated_at 更新时间，删除相应的url rewrite 记录
      */
     public function removeByUpdatedAt($time)
@@ -197,6 +205,7 @@ class RewriteMysqldb implements RewriteInterface
             ]);
         }
     }
+
     /**
      * 返回url rewrite model 对应的query
      */
@@ -204,6 +213,7 @@ class RewriteMysqldb implements RewriteInterface
     {
         return $this->_urlRewriteModel->find();
     }
+
     /**
      * 返回url rewrite 查询结果
      */
@@ -211,6 +221,7 @@ class RewriteMysqldb implements RewriteInterface
     {
         return $this->_urlRewriteModel->findOne($where);
     }
+
     /**
      * 返回url rewrite model
      */

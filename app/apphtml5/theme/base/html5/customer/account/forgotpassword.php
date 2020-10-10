@@ -12,10 +12,10 @@
 		<a external class="button button-link button-nav pull-left" href="<?= Yii::$service->url->getUrl('customer/account/index'); ?>">
 			<span class="icon icon-left"></span>
 		</a>
-		<h1 class='title'><?= Yii::$service->page->translate->__('Forget Password'); ?></h1>
+		<h1 class='title'><?= Yii::$service->page->translate->__('Forgot Password'); ?></h1>
 	</div>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>	
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>	
 <div class="list-block customer-login ">
 	<form class="account-form" action="<?= Yii::$service->url->getUrl('customer/account/forgotpasswordsubmit'); ?>" method="post" id="form-validate">
 		<ul>
@@ -37,8 +37,9 @@
 						<div class="item-media"><i class="icon icon-form-password"></i></div>
 						<div class="item-inner">
 							<div class="item-input">
-								<input placeholder="captcha" type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"><img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
-								 <span class="icon icon-refresh"></span>
+								<input placeholder="<?= Yii::$service->page->translate->__('Captcha'); ?>" type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input">
+                                <img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+								<span class="icon icon-refresh"></span>
 							</div>
 						</div>
 					</div>

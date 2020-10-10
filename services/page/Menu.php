@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -24,10 +25,12 @@ class Menu extends Service
      * whether display HOME in the menu.
      */
     public $displayHome;
+
     /**
      * custom menu that display in the front of product category.
      */
     public $frontCustomMenu;
+
     /**
      * custom menu that display in the behind of product category.
      */
@@ -40,7 +43,7 @@ class Menu extends Service
      * home,frontCustomMenu,productCategory,behindCustomMenu.
      * 得到网站的分类导航栏菜单。
      */
-    protected function actionGetMenuData()
+    public function getMenuData()
     {
         $this->_homeUrl = CUrl::getHomeUrl();
         $arr = [];
@@ -77,8 +80,9 @@ class Menu extends Service
 
         return $arr;
     }
+
     /**
-     * @property $customMenu | Array , 自定义菜单部分数组，从配置中取出
+     * @param $customMenu | Array , 自定义菜单部分数组，从配置中取出
      * @return Array，获取处理后的自定义菜单数组
      */
     protected function customMenuInit($customMenu)
@@ -86,6 +90,9 @@ class Menu extends Service
         $cMenu = [];
         if (is_array($customMenu) && !empty($customMenu)) {
             foreach ($customMenu as $k=>$menu) {
+				if (!is_array($menu)) {
+					continue;
+				}
                 $name           = Yii::$service->page->translate->__($menu['name']);
                 $menu['name']   = $name;
                 $urlPath        = $menu['urlPath'];

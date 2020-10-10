@@ -8,7 +8,7 @@
  */
 ?>
 <div class="main container one-column">
-<?= Yii::$service->page->widget->render('flashmessage'); ?>
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>
 	<div class="col-main">
 		<div class="std">
 			<div class="review_add">
@@ -25,15 +25,7 @@
 						
 						<div class="product_info review_add_price">
 							<div class="price_info">
-								<?php 
-									$priceView = [
-										'view'	=> 'catalog/product/index/price.php'
-									];
-									$priceParam = [
-										'price_info' => $price_info,
-									];
-								?>
-								<?= Yii::$service->page->widget->render($priceView,$priceParam); ?>
+								<?= Yii::$service->page->widget->render('product/price',['price_info' => $price_info]); ?>
 							</div>
 						</div>
 					</div>
@@ -69,9 +61,9 @@
 									</div>
 									<div class="item-inner">
 										<div class="item-title label">
-											<?= Yii::$service->page->translate->__('Summary');?><em class="product-description_em">*</em>
+											<?= Yii::$service->page->translate->__('Summary');?><em class="product-description_em">*</em> 
 										</div>
-										<input placeholder=" Summary of Your Review*" name="editForm[summary]" id="review_title_field" class="input-text  review-input-text required-entry" value="<?=  $editForm['summary'] ?>" type="text">
+										<input placeholder="<?= Yii::$service->page->translate->__('Summary of Your Review');?>" name="editForm[summary]" id="review_title_field" class="input-text  review-input-text required-entry" value="<?=  $editForm['summary'] ?>" type="text">
 									
 									</div>
 								</div>
@@ -107,7 +99,7 @@
 									</div>
 									<div class="item-inner">
 										<div class="item-title label"><?= Yii::$service->page->translate->__('Review');?></div>
-											<textarea placeholder="Your review content" name="editForm[review_content]" id="review_review_field"><?=  $editForm['review_content'] ?></textarea>
+											<textarea placeholder="<?= Yii::$service->page->translate->__('Your review content'); ?>" name="editForm[review_content]" id="review_review_field"><?=  $editForm['review_content'] ?></textarea>
 									</div>
 								</div>
 							</li>
@@ -123,7 +115,7 @@
 										</div>
 										<div class="input-box login-captcha">
 											<input type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"> 
-											<img class="login-captcha-img"  title="点击刷新" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+											<img class="login-captcha-img"  title="点击刷新" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
 											<span class="icon icon-refresh"></span>
 											
 										</div>

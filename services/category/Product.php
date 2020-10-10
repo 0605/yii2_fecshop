@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -20,24 +21,26 @@ use Yii;
 class Product extends Service
 {
     public $pageNum = 1;
+
     public $numPerPage = 50;
+
     public $allowedNumPerPage;
 
     /**
-     * @property $filter | Array   example:
+     * @param $filter | Array   example:
      * [
-     'category_id' 	=> 1,
-     'pageNum'		=> 2,
-     'numPerPage'	=> 50,
-     'orderBy'		=> 'name',
-     'where'			=> [
-     ['>','price',11],
-     ['<','price',22],
-     ],
-     ]
+     *     'category_id'    => 1,
+     *     'pageNum'        => 2,
+     *     'numPerPage'     => 50,
+     *     'orderBy'        => 'name',
+     *     'where'          => [
+     *         ['>','price',11],
+     *         ['<','price',22],
+     *     ],
+     * ]
      * 通过搜索条件得到当类下的产品。
      */
-    protected function actionColl($filter)
+    public function coll($filter)
     {
         $category_id = isset($filter['category_id']) ? $filter['category_id'] : '';
         if (!$category_id) {
@@ -66,15 +69,16 @@ class Product extends Service
     }
 
     /**
-     * @property $filter | Array    和上面的函数 actionColl($filter) 类似。
+     * @param $filter | Array    和上面的函数 coll($filter) 类似。
      */
-    protected function actionGetFrontList($filter)
+    public function getFrontList($filter)
     {
         $filter['group'] = '$spu';
         $coll = Yii::$service->product->getFrontCategoryProducts($filter);
         $collection = $coll['coll'];
         $count = $coll['count'];
         $arr = $this->convertToCategoryInfo($collection);
+        
         return [
             'coll' => $arr,
             'count'=> $count,
@@ -84,7 +88,7 @@ class Product extends Service
     /**
      * 将service取出来的数据，处理一下，然后前端显示。
      */
-    protected function actionConvertToCategoryInfo($collection)
+    public function convertToCategoryInfo($collection)
     {
         $arr = [];
         $defaultImg = Yii::$service->product->image->defautImg();
@@ -103,15 +107,25 @@ class Product extends Service
                     $image = $defaultImg;
                 }
                 list($price, $special_price) = $this->getPrices($one['price'], $one['special_price'], $one['special_from'], $one['special_to']);
+                
+                $product_id = '';
+                if (isset($one['product_id']) && $one['product_id']) {
+                    $product_id = (string)$one['product_id'];
+                } else {
+                    $productPrimaryKey = Yii::$service->product->getPrimaryKey();
+                    $product_id = (string)$one[$productPrimaryKey];
+                }
                 $arr[] = [
-                    'name'          => $name,
-                    'sku'           => $one['sku'],
-                    '_id'           => (string)$one['product_id'],
-                    'image'         => $image,
-                    'price'         => $price,
-                    'special_price' => $special_price,
-                    'url'           => Yii::$service->url->getUrl($url_key),
-                    'product_id'    => (string)$one['_id'],
+                    'name'              => $name,
+                    'sku'                 => $one['sku'],
+                    'reviw_rate_star_average' => isset($one['reviw_rate_star_average']) ? $one['reviw_rate_star_average'] : 0,
+                    'review_count'   => isset($one['review_count']) ? $one['review_count'] : 0,
+                    '_id'                  => $product_id,
+                    'image'              => $image,
+                    'price'                => $price,
+                    'special_price'     => $special_price,
+                    'url'                   => Yii::$service->url->getUrl($url_key),
+                    'product_id'        => $product_id,
                 ];
             }
         }
@@ -125,6 +139,7 @@ class Product extends Service
     protected function getPrices($price, $special_price, $special_from, $special_to)
     {
         if (Yii::$service->product->price->specialPriceisActive($price, $special_price, $special_from, $special_to)) {
+            
             return [$price, $special_price];
         }
 

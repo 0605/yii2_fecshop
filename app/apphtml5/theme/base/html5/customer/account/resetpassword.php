@@ -15,7 +15,7 @@
 		<h1 class='title'><?= Yii::$service->page->translate->__('Reset Password'); ?></h1>
 	</div>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>	
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>	
 <div class="list-block customer-login ">
 	<?php  if(!empty($identity)):  ?>
 		
@@ -47,7 +47,7 @@
 							</div>
 							<div class="item-inner">
 								<div class="item-input">
-									<input placeholder="<?= Yii::$service->page->translate->__('New password');?>" name="editForm[password]" id="password" title="Password" class="input-text required-entry validate-password" type="password">
+									<input placeholder="<?= Yii::$service->page->translate->__('New Password');?>" name="editForm[password]" id="password" title="Password" class="input-text required-entry validate-password" type="password">
 								
 								</div>
 							</div>

@@ -22,6 +22,7 @@ class Index
     {
         $email = Yii::$app->request->get('email');
         $email = \Yii::$service->helper->htmlEncode($email);
+        
         $status = Yii::$service->customer->newsletter->subscribe($email);
         $message = Yii::$service->helper->errors->get();
         if (!$message) {
@@ -29,6 +30,8 @@ class Index
             $message = Yii::$service->page->translate->__('Your subscribed email was successful, You can {urlB} click Here to Home Page {urlE}, Thank You.', $arr);
             $param['email'] = $email;
             Yii::$service->email->customer->sendNewsletterSubscribeEmail($param);
+        } else if (is_array($message)) {
+            $message = implode(',', $message); 
         }
 
         return [

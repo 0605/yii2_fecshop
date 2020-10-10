@@ -10,7 +10,7 @@
 <div class="shopping-cart-img">
 	<?= Yii::$service->page->translate->__('Contacts'); ?>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>	
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>	
 <div class="list-block customer-login ">
 	<div class="col-main account_center">
 		<form method="post" id="form-validate" class="account-form" >
@@ -73,7 +73,8 @@
 							<div class="item-media"><i class="icon icon-form-password"></i></div>
 							<div class="item-inner">
 								<div class="item-input">
-									<input placeholder="captcha" type="text" name="sercrity_code"  value="" size=10 class="login-captcha-input verification_code_input"><img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+									<input placeholder="captcha" type="text" name="sercrity_code"  value="" size=10 class="login-captcha-input verification_code_input">
+                                    <img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
 									<span class="icon icon-refresh"></span>
 								</div>
 							</div>

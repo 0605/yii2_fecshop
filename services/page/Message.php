@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -20,15 +21,17 @@ use Yii;
 class Message extends Service
 {
     protected $_correctName = 'correct_message';
+
     protected $_errorName   = 'error_message';
 
     /**
-     * @property $message | String
+     * @param $message | String
      * 增加 correct message. 添加一些操作成功的提示信息，譬如产品加入购物车成功
      */
-    protected function actionAddCorrect($message)
+    public function addCorrect($message)
     {
         if (empty($message)) {
+            
             return;
         }
         if (is_string($message)) {
@@ -43,12 +46,13 @@ class Message extends Service
     }
 
     /**
-     * @property $message | String
+     * @param $message | String
      * 增加 error message.
      */
-    protected function actionAddError($message)
+    public function addError($message)
     {
         if (empty($message)) {
+            
             return;
         }
         if (is_string($message)) {
@@ -57,6 +61,9 @@ class Message extends Service
         $error = $this->getErrors();
         if (is_array($error) && is_array($message)) {
             $message = array_merge($error, $message);
+        }
+        if (is_array($message)) {
+            $message = implode(',', $message);
         }
 
         return Yii::$service->session->setFlash($this->_errorName, $message);
@@ -69,7 +76,7 @@ class Message extends Service
      * Yii::$service->page->message是要在前台页面显示的。
      * 而 Yii::$service->helper->errors 不会在前台显示，只是记录Yii Service执行过程中的报错信息。
      */
-    protected function actionAddByHelperErrors()
+    public function addByHelperErrors()
     {
         $errors = Yii::$service->helper->errors->get();
         //var_dump($errors);
@@ -88,17 +95,31 @@ class Message extends Service
      * 获取 correct message.
      * @return array
      */
-    protected function actionGetCorrects()
+    public function getCorrects()
     {
-        return Yii::$service->session->getFlash($this->_correctName);
+        $corrects =  Yii::$service->session->getFlash($this->_correctName);
+        if ($corrects && !is_array($corrects)) {
+            
+            return [$corrects];
+        } else {
+            
+            return $corrects;
+        }
     }
 
     /**
      * 获取 error message.
      * @return array
      */
-    protected function actionGetErrors()
+    public function getErrors()
     {
-        return Yii::$service->session->getFlash($this->_errorName);
+        $errors = Yii::$service->session->getFlash($this->_errorName);
+        if ($errors && !is_array($errors)) {
+            
+            return [$errors];
+        } else {
+            
+            return $errors;
+        }
     }
 }

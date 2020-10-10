@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -12,20 +13,24 @@ namespace fecshop\services;
 use Yii;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * @author Terry Zhao <2358269014@qq.com>
  * @since 1.0
  */
-class Service extends Object
+class Service extends BaseObject
 {
     public $childService;
-    public $enableService = true; /* 该服务是否可用  */
+
+    public $enableService = true; // 该服务是否可用
+
     protected $_childService;
 
     protected $_beginCallTime;
+
     protected $_beginCallCode;
+
     protected $_callFuncLog;
 
     public function __get($attr)
@@ -51,6 +56,7 @@ class Service extends Object
 
             return $return;
         } else {
+            
             throw new InvalidCallException('fecshop service method is not exit.  '.get_class($this)."::$method");
         }
     }
@@ -61,35 +67,36 @@ class Service extends Object
     public function getChildService($childServiceName)
     {
         //var_dump($this->childService['xunSearch']);exit;
-        if (!$this->_childService[$childServiceName]) {
-            
-            //var_dump($this->_childService['xunSearch']);exit;
+        if (!isset($this->_childService[$childServiceName]) || !$this->_childService[$childServiceName]) {
             $childService = $this->childService;
             if (isset($childService[$childServiceName])) {
                 $service = $childService[$childServiceName];
-                if(!isset($service['enableService']) || $service['enableService']){
-                    $this->_childService[$childServiceName] = Yii::createObject($service);  
-                }else{
+                if (!isset($service['enableService']) || $service['enableService'] !== false) {
+                    $this->_childService[$childServiceName] = Yii::createObject($service);
+                } else {
+                    
                     throw new InvalidConfigException('Child Service ['.$childServiceName.'] is disable in '.get_called_class().', you must config it! ');
                 }
             } else {
+                
                 throw new InvalidConfigException('Child Service ['.$childServiceName.'] is not find in '.get_called_class().', you must config it! ');
             }
-        }
+        } 
 
-        return $this->_childService[$childServiceName];
+        return isset($this->_childService[$childServiceName]) ? $this->_childService[$childServiceName] : null;
     }
+
     /**
      * 得到所有的子服务
-     * 如果子服务含有enable字段，并且设置成false，则该子服务会被判定为关闭
+     * 如果子服务含有enableService字段，并且设置成false，则该子服务会被判定为关闭
      */
     public function getAllChildServiceName()
     {
         $childService = $this->childService;
         $arr = [];
-        if(is_array($childService) && !empty($childService)){
-            foreach($childService as $childName => $service){
-                if(!isset($service['enable']) || $service['enable']){
+        if (is_array($childService) && !empty($childService)) {
+            foreach ($childService as $childName => $service) {
+                if ($service['enableService'] !== false) {
                     $arr[] = $childName;
                 }
             }
@@ -118,10 +125,9 @@ class Service extends Object
     {
         if (Yii::$app->serviceLog->isServiceLogEnable()) {
             list($logTrace, $isCalledByThis) = $this->debugBackTrace();
-            /*
-             * if function is called by $this ,not log it to mongodb.
-             */
+            // if function is called by $this ,not log it to mongodb.
             if ($isCalledByThis) {
+                
                 return;
             }
             $begin_microtime = $this->_beginCallTime;
@@ -195,5 +201,48 @@ class Service extends Object
         }
 
         return [$arr, $isCalledByThis];
+    }
+    
+    /**
+     * @param $object | Object , 调用该函数的对象
+     * 注意：
+     * 1. $object 必须存在属性storage，否则将会报错
+     * 2. 根据该函数得到相应的Storage，该文件必须存在并设置好相应的namespace，否则将报错
+     * 作用：
+     * 作为services，同一个功能的实现，我们可能使用多种实现方式，譬如
+     * search功能的实现，我们可以使用mysql，也可以使用mongodb，
+     * 产品搜索，可以使用mongodb，也可以使用xunsearch，elasticSearch等
+     * 因此一个功能可以有多种实现，我们通过设置$object->storage 来进行切换各种实现方式。
+     * 譬如 searchStorage有2种，\fecshop\services\search\MongoSearch 和 \fecshop\services\search\XunSearch
+     * 使用该函数返回相应的storage类，类似工厂的方式，易于后续的扩展。
+     * 举例：
+     * 在@fecshop\services\Product.php 这个类中设置类变量 $storage     = 'ProductMongodb';
+     * 那么调用该函数返回的字符串为：'\fecshop\services\product\'+$storage，
+     * 最终函数返回值为：\fecshop\services\product\ProductMongodb
+     * 感谢：
+     * @dionyang 提的建议：http://www.fecshop.com/topic/281
+     */
+    public function getStorageService($object)
+    {
+        $className = get_class($object);
+        if (!isset($object->storage) || !$object->storage) {
+            throw new InvalidConfigException('you must config class var $storage in '.$className);
+            
+            return false;
+        }
+        if ($object->storagePath) {
+            $storagePath = '\\'.trim($object->storagePath, '\\').'\\';
+        } else {
+            $storagePath = '\\'.strtolower($className).'\\';
+        }
+        $storageServiceClass =  $storagePath.ucfirst($object->storage);
+    
+        if (!class_exists($storageServiceClass)) {
+            throw new InvalidCallException('class ['.$storageServiceClass.'] is not exist , you must add the class before you use it');
+            
+            return false;
+        }
+        
+        return $storageServiceClass;
     }
 }

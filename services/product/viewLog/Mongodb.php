@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -22,15 +23,20 @@ use fecshop\services\Service;
 class Mongodb extends Service
 {
     public $collection;
+
     public $_defaultCollection = 'log_product_view';
+
     public $_maxProductCount = 10;
     
     protected $_logModelName = '\fecshop\models\mongodb\product\ViewLog';
+
     protected $_logModel;
+
     // init
     public function init()
     {
-        list($this->_logModelName,$this->_logModel) = \Yii::mapGet($this->_logModelName);  
+        parent::init();
+        list($this->_logModelName, $this->_logModel) = \Yii::mapGet($this->_logModelName);
         if (!$this->collection) {
             $this->collection = $this->_defaultCollection;
         }
@@ -49,11 +55,12 @@ class Mongodb extends Service
             $user_id = CUser::getCurrentUserId();
         }
         if (!$user_id) {
+            
             return;
         }
         $coll = $this->_logModel->find()->where([
-                'user_id' => $user_id,
-            ])
+            'user_id' => $user_id,
+        ])
             ->asArray()
             ->orderBy(['date_time' => SORT_DESC])
             ->limit($count)
@@ -74,7 +81,6 @@ class Mongodb extends Service
             'image'        => $productOb['image'],
             'name'            => $productOb['name'],
         ];
-
         if (isset($productOb['user_id']) && $productOb['user_id']) {
             $arr['user_id'] = $productOb['user_id'];
         } elseif ($currentUser = CUser::getCurrentUserId()) {
@@ -83,7 +89,6 @@ class Mongodb extends Service
             // if not give user_id, can not save history
             return;
         }
-
         $mongodbViewLog = $this->_logModel->getCollection();
         $mongodbViewLog->save($arr);
     }

@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -25,11 +26,15 @@ use yii\base\InvalidConfigException;
 class Request extends \yii\web\Request
 {
     protected $_urlRewriteModelName = '\fecshop\models\mongodb\UrlRewrite';
+
     protected $_urlRewriteModel;
     
-    public function __construct(){
-        list($this->_urlRewriteModelName,$this->_urlRewriteModel) = \Yii::mapGet($this->_urlRewriteModelName);  
+    public function init()
+    {
+        parent::init();
+        list($this->_urlRewriteModelName, $this->_urlRewriteModel) = \Yii::mapGet($this->_urlRewriteModelName);
     }
+
     /**
      * rewrite yii\web\Request  resolveRequestUri().
      */
@@ -48,6 +53,7 @@ class Request extends \yii\web\Request
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }
         } else {
+            
             throw new InvalidConfigException('Unable to determine the request URI.');
         }
 
@@ -69,12 +75,9 @@ class Request extends \yii\web\Request
         if ($baseUrl) {
             $requestUriRelative = substr($requestUriRelative, strlen($baseUrl));
         }
-
-        //echo $requestUriRelative;exit;
         $urlKey = '';
         $urlParam = '';
         $urlParamSuffix = '';
-
         if (strstr($requestUriRelative, '#')) {
             list($urlNoSuffix, $urlParamSuffix) = explode('#', $requestUriRelative);
             if (strstr($urlNoSuffix, '?')) {
@@ -106,6 +109,7 @@ class Request extends \yii\web\Request
 
             return $baseUrl.$url;
         } else {
+            
             return $requestUri;
         }
     }
@@ -135,6 +139,7 @@ class Request extends \yii\web\Request
             'custom_url_key' => $urlKey,
         ])->asArray()->one();
         if ($UrlData['custom_url_key']) {
+            
             return $UrlData['origin_url'];
         }
     }

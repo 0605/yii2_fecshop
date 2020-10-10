@@ -6,17 +6,21 @@
  * @copyright Copyright (c) 2016 FecShop Software LLC
  * @license http://www.fecshop.com/license/
  */
+use fec\helpers\CRequest;
 ?>
 <div class="main container one-column">
 	<div class="col-main">
-		<?= Yii::$service->page->widget->render('flashmessage'); ?>
+        <?= Yii::$service->page->widget->render('base/breadcrumbs',$this); ?>
+		<?= Yii::$service->page->widget->render('base/flashmessage'); ?>
 		<form action="<?= Yii::$service->url->getUrl('checkout/onepage'); ?>" method="post" id="onestepcheckout-form">
-			<?= \fec\helpers\CRequest::getCsrfInputHtml(); ?>
+			<?= CRequest::getCsrfInputHtml(); ?>
 			<fieldset style="margin: 0;" class="group-select">
 				<p class="onestepcheckout-description"><?= Yii::$service->page->translate->__('Welcome to the checkout,Fill in the fields below to complete your purchase');?> !</p>
-				<p class="onestepcheckout-login-link">
-					<a href="<?= Yii::$service->url->getUrl('customer/account/login'); ?>" id="onestepcheckout-login-link"><?= Yii::$service->page->translate->__('Already registered? Click here to login');?>.</a>
-				</p>
+				<?php if (\Yii::$app->user->isGuest): ?>
+                    <p class="onestepcheckout-login-link">
+                        <a href="<?= Yii::$service->url->getUrl('customer/account/login'); ?>" id="onestepcheckout-login-link"><?= Yii::$service->page->translate->__('Already registered? Click here to login');?>.</a>
+                    </p>
+                <?php endif; ?>
 				<div class="onestepcheckout-threecolumns checkoutcontainer onestepcheckout-skin-generic onestepcheckout-enterprise">
 					<div class="onestepcheckout-column-left">
 						<?php # address 部门
@@ -42,30 +46,15 @@
 
 					<div class="onestepcheckout-column-middle">
 						<div class="shipping_method_html">
-							<?php # shipping部分
-								$shippingView = [
-									'view'	=> 'checkout/onepage/index/shipping.php'
-								];
-								$shippingParam = [
-									'shippings' => $shippings,
-								];
-							?>
-							<?= Yii::$service->page->widget->render($shippingView,$shippingParam); ?>
+							<?= Yii::$service->page->widget->render('order/shipping', ['shippings' => $shippings]); ?>
 						</div>
-				
-				
 						<?php # payment部分
-							$paymentView = [
-								'view'	=> 'checkout/onepage/index/payment.php'
-							];
 							$paymentParam = [
 								'payments' => $payments,
 								'current_payment_mothod' => $current_payment_mothod,
 							];
 						?>
-						<?= Yii::$service->page->widget->render($paymentView,$paymentParam); ?>
-					
-							
+						<?= Yii::$service->page->widget->render('order/payment', $paymentParam); ?>
 						<div class="onestepcheckout-coupons">
 							<div style="display: none;" id="coupon-notice"></div>
 							<div class="op_block_title"><?= Yii::$service->page->translate->__('Coupon codes (optional)');?></div>
@@ -78,22 +67,26 @@
 							<div class="clear"></div>
 							<div class="coupon_add_log"></div>
 						</div>
-						
+                        
+                        
+						<div class="onestepcheckout-coupons">
+							<div class="op_block_title"><?= Yii::$service->page->translate->__('Order Remark (optional)');?></div>
+							<label for="id_couponcode"><?= Yii::$service->page->translate->__('You can fill in the order remark information below');?></label>
+							<textarea class="order_remark" name="order_remark" style="width:94%;height:100px;padding:10px;"></textarea>
+						</div>
+                        
 						
 					</div>
 
 					<div class="onestepcheckout-column-right">
 						<div class="review_order_view">
 							<?php # review order部分
-								$reviewOrderView = [
-									'view'	=> 'checkout/onepage/index/review_order.php'
-								];
 								$reviewOrderParam = [
 									'cart_info' => $cart_info,
 									'currency_info' => $currency_info,
 								];
 							?>
-							<?= Yii::$service->page->widget->render($reviewOrderView,$reviewOrderParam); ?>
+							<?= Yii::$service->page->widget->render('order/view', $reviewOrderParam); ?>
 							
 						</div>
 						<div class="onestepcheckout-place-order">
@@ -110,6 +103,8 @@
 
 <script>
 <?php $this->beginBlock('placeOrder') ?>
+    csrfName = $(".thiscsrf").attr("name");
+    csrfVal = $(".thiscsrf").val();
 	function validateEmail(email) {
 		var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 		return re.test(email);
@@ -175,20 +170,20 @@
 			if(!coupon_code){
 				//alert("coupon can not empty!");
 			}
-			//coupon_url = $("#discount-coupon-form").attr("action");
-			//alert(coupon_url);
+			$data = {"coupon_code":coupon_code};
+            $data[csrfName] = csrfVal;
 			$.ajax({
 				async:true,
 				timeout: 6000,
 				dataType: 'json', 
 				type:'post',
-				data: {"coupon_code":coupon_code},
+				data: $data,
 				url:coupon_url,
 				success:function(data, textStatus){ 
 					if(data.status == 'success'){
 						$(".couponType").val($succ_coupon_type);
 						hml = $('.add_coupon_submit').html();
-						if(hml == 'Add Coupon'){
+						if(hml == '<?= Yii::$service->page->translate->__('Add Coupon');?>'){
 							$('.add_coupon_submit').html('<?= Yii::$service->page->translate->__('Cancel Coupon');?>');
 						}else{
 							$('.add_coupon_submit').html('<?= Yii::$service->page->translate->__('Add Coupon');?>');
@@ -272,9 +267,6 @@
 				$(".checkout-payment-method-load").after('<div style=""  class="validation-advice"><?= Yii::$service->page->translate->__('This is a required field.');?></div>');
 				j = 1;
 			}
-			
-			
-			
 			if(address_list){
 				if(!j){
 					$(".onestepcheckout-place-order").addClass('visit');
@@ -282,13 +274,9 @@
 					$("#onestepcheckout-form").submit();
 				}
 			}else{
-				//alert(11);
-				//alert(j);
 				$("#onestepcheckout-form .required-entry").each(function(){
 					value = $(this).val();
 					if(!value){
-						//alert(this);
-						//alert($(this).attr('name'));
 						i++;
 						$(this).after('<div style=""  class="validation-advice"><?= Yii::$service->page->translate->__('This is a required field.');?></div>');
 					}
@@ -304,9 +292,6 @@
 					
 					new_user_pass = $(".customer_password").val();
 					new_user_pass_cm = $(".customer_confirm_password").val();
-					//alert(new_user_pass);
-					//alert(new_user_pass.length);
-					//alert(new_user_pass_cm);
 					<?php 
 						$passwdMinLength = Yii::$service->customer->getRegisterPassMinLength();
 						$passwdMaxLength = Yii::$service->customer->getRegisterPassMaxLength();
@@ -325,9 +310,7 @@
 					}  
 				}
 				
-				//alert(222);
 				if(!i && !j){
-					//alert(333);
 					$(".onestepcheckout-place-order").addClass('visit');
 					$("#onestepcheckout-form").submit();
 				}

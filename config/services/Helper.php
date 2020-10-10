@@ -36,8 +36,18 @@ return [
                 ],
             ],
             */
+            'wx' => [
+                'class' => 'fecshop\services\helper\Wx',
+                'configFile'    => '@common/config/payment/wxpay/lib/WxPay.Micro.Config.php',
+            ],
             'errors' => [
                 'class' => 'fecshop\services\helper\Errors',
+            ],
+            'zipFile' => [
+                'class' => 'fecshop\services\helper\ZipFile',
+            ],
+            'errorHandler' => [
+                'class' => 'fecshop\services\helper\ErrorHandler',
             ],
             'mobileDetect' => [
                 'class' => 'fecshop\services\helper\MobileDetect',
@@ -59,6 +69,15 @@ return [
             'format' => [
                 'class' => 'fecshop\services\helper\Format',
                 //'default_country' => 'US',
+            ],
+            'appserver' => [
+                'class' => 'fecshop\services\helper\Appserver',
+            ],
+            'appapi' => [
+                'class' => 'fecshop\services\helper\Appapi',
+            ],
+            'echart' => [
+                'class' => 'fecshop\services\helper\Echart',
             ],
         ],
     ],

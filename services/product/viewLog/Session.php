@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -13,6 +14,7 @@ use fec\helpers\CDate;
 use fec\helpers\CUser;
 use fecshop\services\Service;
 use Yii;
+
 /**
  * **注意**：该方法不能在接口类型里面使用
  * @author Terry Zhao <2358269014@qq.com>
@@ -21,8 +23,11 @@ use Yii;
 class Session extends Service
 {
     public $type;
+
     public $_defaultType = 'session';
+
     public $_sessionKey = 'services_product_viewlog_history';
+
     public $_maxProductCount = 10;
 
     /**
@@ -52,7 +57,6 @@ class Session extends Service
         } else {
             $logArr['user_id'] = CUser::getCurrentUserId();
         }
-
         if (!($session_history = Yii::$service->session->get($this->_sessionKey))) {
             $session_history = [];
         } elseif (($count = count($session_history)) >= $this->_maxProductCount) {

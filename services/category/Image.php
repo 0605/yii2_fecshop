@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -23,10 +24,12 @@ class Image extends Service
      * absolute image save floder.
      */
     public $imageFloder = 'media/catalog/category';
+
     /**
      * upload image max size.
      */
     public $maxUploadMSize;
+
     /**
      * allow image type.
      */
@@ -41,7 +44,7 @@ class Image extends Service
     /**
      * 得到保存分类图片所在相对根目录的url路径.
      */
-    protected function actionGetBaseUrl()
+    public function getBaseUrl()
     {
         return Yii::$service->image->GetImgUrl($this->imageFloder, 'common');
     }
@@ -49,7 +52,7 @@ class Image extends Service
     /**
      * 得到保存分类图片所在相对根目录的文件夹路径.
      */
-    protected function actionGetBaseDir()
+    public function getBaseDir()
     {
         return Yii::$service->image->GetImgDir($this->imageFloder, 'common');
     }
@@ -57,27 +60,27 @@ class Image extends Service
     /**
      * 通过分类图片的相对路径得到产品图片的url.
      */
-    protected function actionGetUrl($str)
+    public function getUrl($str)
     {
         return Yii::$service->image->GetImgUrl($this->imageFloder.$str, 'common');
     }
 
     /**
-     * 通过产品图片的相对路径得到产品图片的绝对路径.
+     * 通过分类图片的相对路径得到分类图片的绝对路径.
      */
-    protected function actionGetDir()
+    public function getDir($str)
     {
         return Yii::$service->image->GetImgDir($this->imageFloder.$str, 'common');
     }
 
     /**
-     * @property $param_img_file | Array .
+     * @param $param_img_file | Array .
      * upload image from web page , you can get image from $_FILE['XXX'] ,
      * $param_img_file is get from $_FILE['XXX'].
      * return , if success ,return image saved relative file path , like '/b/i/big.jpg'
      * if fail, reutrn false;
      */
-    protected function actionSaveCategoryUploadImg($FILE)
+    public function saveCategoryUploadImg($FILE)
     {
         Yii::$service->image->imageFloder = $this->imageFloder;
         Yii::$service->image->allowImgType = $this->allowImgType;

@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -21,6 +22,7 @@ class Body extends BodyBase
     public function getLastData()
     {
         $identity = Yii::$app->user->identity;
+        
         return [
             'name'                  => $identity['firstname'].' '. $identity['lastname'],
             'email'                 => $identity['email'],

@@ -19,8 +19,10 @@ use fecshop\app\appadmin\modules\AppadminController;
 
 class CustomerController extends AppadminController
 {
-    public function getViewPath()
-    {
-        return Yii::getAlias('@fecshop/app/appadmin/modules/Customer/views') . DIRECTORY_SEPARATOR . $this->id;
-    }
+    public $enableCsrfValidation = false;
+    
+    //public function getViewPath()
+    //{
+    //    return Yii::getAlias('@fecshop/app/appadmin/modules/Customer/views') . DIRECTORY_SEPARATOR . $this->id;
+    //}
 }

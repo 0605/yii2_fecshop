@@ -8,7 +8,8 @@
  */
 ?>
 <div class="main container one-column">
-<?= Yii::$service->page->widget->render('flashmessage'); ?>
+    <?= Yii::$service->page->widget->render('base/breadcrumbs',$this); ?>
+    <?= Yii::$service->page->widget->render('base/flashmessage'); ?>
 	<div class="account-register">
 		<div class="page-title">
 			<h1><?= Yii::$service->page->translate->__('Create an Account'); ?></h1>
@@ -69,7 +70,7 @@
                             <label for="captcha" class="required"><em>*</em><?= Yii::$service->page->translate->__('Captcha'); ?></label>
                             <div class="input-box register-captcha">
 								<input type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"> 
-								<img class="login-captcha-img"  title="click refresh" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+								<img class="login-captcha-img"  title="click refresh" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
 								<i class="refresh-icon"></i>
                             </div>
 							<script>
@@ -201,6 +202,33 @@ $(document).ready(function(){
 			$("#form-validate").submit();
 		}
 	});
+    
+    $(".email_register_resend").click(function(){
+        emailRegisterResendUrl = "<?= Yii::$service->url->getUrl('customer/account/resendregisteremail') ?>";
+        $.ajax({
+            async:true,
+            timeout: 6000,
+            dataType: 'json', 
+            type:'get',
+            data: {
+                "email": "<?= $email ?>"
+            },
+            url:emailRegisterResendUrl,
+            success:function(data, textStatus){ 
+                // 
+                if (data.resendStatus == 'success') {
+                    //$(".resend_text").html('resend register email success');
+                    alert("<?= Yii::$service->page->translate->__('resend register email success') ?>")
+                } else {
+                    //$(".resend_text").html('resend register email fail');
+                    alert("<?= Yii::$service->page->translate->__('resend register email fail') ?>")
+                }
+            },
+            error:function (XMLHttpRequest, textStatus, errorThrown){}
+        });
+        
+        
+    });
 });
 <?php $this->endBlock(); ?>  
 </script>  

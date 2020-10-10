@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -20,21 +21,33 @@ use Yii;
 class Google extends Service
 {
     protected $currentCountry;
+
     protected $currentState;
 
-    // 得到谷歌登录的url
-    public function getLoginUrl($urlKey)
+    /**
+     * @param $url | String , 用于得到返回url的字符串，$customDomain == false时，是urlKey，$customDomain == true时，是完整的url
+     * @param $customDomain | boolean, 是否是自定义url
+     * @return  得到跳转到google登录的url
+     */
+    public function getLoginUrl($url, $customDomain = false)
     {
+        if (!$customDomain) {
+            $redirectUrl = Yii::$service->url->getUrl($url);
+        } else {
+            $redirectUrl = $url;
+        }
         global $googleapiinfo;
         $thirdLogin = Yii::$service->store->thirdLogin;
         $googleapiinfo['GOOGLE_CLIENT_ID'] = isset($thirdLogin['google']['CLIENT_ID']) ? $thirdLogin['google']['CLIENT_ID'] : '';
         $googleapiinfo['GOOGLE_CLIENT_SECRET'] = isset($thirdLogin['google']['CLIENT_SECRET']) ? $thirdLogin['google']['CLIENT_SECRET'] : '';
         //echo $lib_google_base.'/Social.php';exit;
+        if (!$googleapiinfo['GOOGLE_CLIENT_ID']  || !$googleapiinfo['GOOGLE_CLIENT_SECRET'] ) {
+            
+            return '';
+        }
         $lib_google_base = Yii::getAlias('@fecshop/lib/google');
         include $lib_google_base.'/Social.php';
-        $redirectUrl = Yii::$service->url->getUrl($urlKey);
         $Social_obj = new \Social($redirectUrl, 1);
-
         $url = $Social_obj->google();
 
         return $url;

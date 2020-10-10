@@ -1,14 +1,20 @@
 <?php
-/*
- * 存放 一些基本的非数据库数据 如 html
- * 都是数组
+/**
+ * FecMall file.
+ *
+ * @link http://www.fecmall.com/
+ * @copyright Copyright (c) 2016 FecMall Software LLC
+ * @license http://www.fecmall.com/license/
  */
 
-namespace fecshop\app\appfront\modules\cms\block\article;
+namespace fecshop\app\appfront\modules\Cms\block\article;
 
 use fec\helpers\CRequest;
 use Yii;
-
+/**
+ * @author Terry Zhao <2358269014@qq.com>
+ * @since 1.0
+ */
 class Index
 {
     protected $_artile;
@@ -31,7 +37,7 @@ class Index
     public function initHead()
     {
         $primaryKey = Yii::$service->cms->article->getPrimaryKey();
-        $primaryVal = CRequest::param($primaryKey);
+        $primaryVal = Yii::$app->request->get($primaryKey);
         $article = Yii::$service->cms->article->getByPrimaryKey($primaryVal);
         $this->_artile = $article;
 

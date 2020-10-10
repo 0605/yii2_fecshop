@@ -11,7 +11,7 @@
 	<?= Yii::$service->page->translate->__('Login'); ?>
 	<a external href="<?= Yii::$service->url->getUrl('customer/account/register');  ?>" class="f-right"><?= Yii::$service->page->translate->__('Register'); ?></a>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>	
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>	
 <div class="list-block customer-login">
 	<form action="<?= Yii::$service->url->getUrl("customer/account/login");  ?>" method="post" id="login-form" class="account-form">
 		<ul>
@@ -20,7 +20,7 @@
 					<div class="item-media"><i class="icon icon-form-email"></i></div>
 					<div class="item-inner">
 						<div class="item-input">
-							<input name="editForm[email]" value="<?= $email; ?>" id="email" type="email" placeholder="E-mail">
+							<input name="editForm[email]" value="<?= $email; ?>" id="email" type="email" placeholder="<?= Yii::$service->page->translate->__('E-mail'); ?>">
 						</div>
 					</div>
 				</div>
@@ -30,7 +30,7 @@
 					<div class="item-media"><i class="icon icon-form-password"></i></div>
 					<div class="item-inner">
 						<div class="item-input">
-							<input type="password" placeholder="Password"  name="editForm[password]" class="input-text required-entry validate-password" id="pass" title="Password" >
+							<input type="password" placeholder="<?= Yii::$service->page->translate->__('Password'); ?>"  name="editForm[password]" class="input-text required-entry validate-password" id="pass" title="Password" >
 						</div>
 					</div>
 				</div>
@@ -41,7 +41,7 @@
 					<div class="item-media"><i class="icon icon-form-password"></i></div>
 					<div class="item-inner">
 						<div class="item-input">
-							<input placeholder="captcha" type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"><img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
+							<input placeholder="captcha" type="text" name="editForm[captcha]" value="" size=10 class="login-captcha-input"><img class="login-captcha-img"  title="<?= Yii::$service->page->translate->__('click refresh'); ?>" src="<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?<?php echo md5(time() . mt_rand(1,10000));?>" align="absbottom" onclick="this.src='<?= Yii::$service->url->getUrl('site/helper/captcha'); ?>?'+Math.random();"></img>
 							 <span class="icon icon-refresh"></span>
 						</div>
 					</div>
@@ -85,14 +85,41 @@
 			</div>
 		</div>
 	</form>
-</div>	  
+</div>	
+  
 <script type="text/javascript">	
-	<?php $this->beginBlock('customer_login') ?>
+<?php $this->beginBlock('customer_account_login') ?> 
 
 	$(document).ready(function(){
 		$("#js_registBtn").click(function(){
 			$("#login-form").submit();
 		});
+        $(".email_register_resend").click(function(){
+            emailRegisterResendUrl = "<?= Yii::$service->url->getUrl('customer/account/resendregisteremail') ?>";
+            $.ajax({
+                async:true,
+                timeout: 6000,
+                dataType: 'json', 
+                type:'get',
+                data: {
+                    "email": "<?= $email ?>"
+                },
+                url:emailRegisterResendUrl,
+                success:function(data, textStatus){ 
+                    // 
+                    if (data.resendStatus == 'success') {
+                        //$(".resend_text").html('resend register email success');
+                        alert("<?= Yii::$service->page->translate->__('resend register email success') ?>")
+                    } else {
+                        //$(".resend_text").html('resend register email fail');
+                        alert("<?= Yii::$service->page->translate->__('resend register email fail') ?>")
+                    }
+                },
+                error:function (XMLHttpRequest, textStatus, errorThrown){}
+            });
+            
+            
+        });
 	});
 	var newwindow;
 	var intId;
@@ -140,9 +167,9 @@
 	  return false;
 	}
 	
- <?php $this->endBlock(); ?>  
-	<?php $this->registerJs($this->blocks['customer_login'],\yii\web\View::POS_END);//将编写的js代码注册到页面底部 ?>
-</script> 
+<?php $this->endBlock(); ?>  
+</script>  
+<?php $this->registerJs($this->blocks['customer_account_login'],\yii\web\View::POS_END);//将编写的js代码注册到页面底部 ?>
  
  
  

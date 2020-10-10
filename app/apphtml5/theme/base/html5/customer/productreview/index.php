@@ -18,7 +18,7 @@ use fecshop\app\apphtml5\helper\Format;
 		<h1 class='title'><?= Yii::$service->page->translate->__('Product Review'); ?></h1>
 	</div>
 </div>
-<?= Yii::$service->page->widget->render('flashmessage'); ?>
+<?= Yii::$service->page->widget->render('base/flashmessage'); ?>
 <div class="account-container">
 	<div class="col-main account_center">
 		<div class="account_review_product">
@@ -70,7 +70,9 @@ use fecshop\app\apphtml5\helper\Format;
 							</table>	
 							<?php if($pageToolBar): ?>
 							<div class="pageToolbar">
-								<label class="title"><?= Yii::$service->page->translate->__('Page:');?></label><?= $pageToolBar ?>
+								<label class=""><?= Yii::$service->page->translate->__('Page:');?></label>
+                                <?= $pageToolBar ?>
+                                <div class="clear"></div>
 							</div>
 							<?php endif; ?>
 						</div>

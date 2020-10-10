@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -11,6 +12,7 @@ namespace fecshop\services\url\rewrite;
 
 //use fecshop\models\mongodb\url\UrlRewrite;
 use Yii;
+use fecshop\services\Service;
 use yii\base\InvalidValueException;
 
 /**
@@ -18,18 +20,22 @@ use yii\base\InvalidValueException;
  * @author Terry Zhao <2358269014@qq.com>
  * @since 1.0
  */
-class RewriteMongodb implements RewriteInterface
+class RewriteMongodb extends Service implements RewriteInterface
 {
     public $numPerPage = 20;
+
     protected $_urlRewriteModelName = '\fecshop\models\mongodb\url\UrlRewrite';
+
     protected $_urlRewriteModel;
     
-    public function __construct(){
-        list($this->_urlRewriteModelName,$this->_urlRewriteModel) = \Yii::mapGet($this->_urlRewriteModelName);  
+    public function init()
+    {
+        parent::init();
+        list($this->_urlRewriteModelName, $this->_urlRewriteModel) = \Yii::mapGet($this->_urlRewriteModelName);
     }
     
     /**
-     * @property $urlKey | string 
+     * @param $urlKey | string
      * 通过重写后的urlkey字符串，去url_rewrite表中查询，找到重写前的url字符串。
      */
     public function getOriginUrl($urlKey)
@@ -38,6 +44,7 @@ class RewriteMongodb implements RewriteInterface
             'custom_url_key' => $urlKey,
         ])->asArray()->one();
         if ($UrlData['custom_url_key']) {
+            
             return $UrlData['origin_url'];
         }
     }
@@ -50,8 +57,10 @@ class RewriteMongodb implements RewriteInterface
     public function getByPrimaryKey($primaryKey)
     {
         if ($primaryKey) {
+            
             return $this->_urlRewriteModel->findOne($primaryKey);
         } else {
+            
             return new $this->_urlRewriteModelName();
         }
     }
@@ -82,7 +91,7 @@ class RewriteMongodb implements RewriteInterface
     }
 
     /**
-     * @property $one|array
+     * @param $one|array
      * save $data to cms model,then,add url rewrite info to system service urlrewrite.
      */
     public function save($one)
@@ -91,7 +100,7 @@ class RewriteMongodb implements RewriteInterface
         if ($primaryVal) {
             $model = $this->_urlRewriteModel->findOne($primaryVal);
             if (!$model) {
-                Yii::$service->helper->errors->add('UrlRewrite '.$this->getPrimaryKey().' is not exist');
+                Yii::$service->helper->errors->add('UrlRewrite {primaryKey} is not exist', ['primaryKey'=>$this->getPrimaryKey()]);
 
                 return;
             }
@@ -103,8 +112,9 @@ class RewriteMongodb implements RewriteInterface
 
         return true;
     }
+
     /**
-     * @property $ids | Array or String 
+     * @param $ids | Array or String
      * 删除相应的url rewrite 记录
      */
     public function remove($ids)
@@ -122,7 +132,7 @@ class RewriteMongodb implements RewriteInterface
                     $model->delete();
                 } else {
                     //throw new InvalidValueException("ID:$id is not exist.");
-                    Yii::$service->helper->errors->add("UrlRewrite Remove Errors:ID $id is not exist.");
+                    Yii::$service->helper->errors->add('UrlRewrite Remove Errors:ID {id} is not exist.', ['id' => $id]);
 
                     return false;
                 }
@@ -134,7 +144,7 @@ class RewriteMongodb implements RewriteInterface
                 $url_key = $model['url_key'];
                 $model->delete();
             } else {
-                Yii::$service->helper->errors->add("UrlRewrite Remove Errors:ID:$id is not exist.");
+                Yii::$service->helper->errors->add('UrlRewrite Remove Errors:ID:{id} is not exist.', ['id' => $id]);
 
                 return false;
             }
@@ -142,8 +152,9 @@ class RewriteMongodb implements RewriteInterface
 
         return true;
     }
+
     /**
-     * @property $time | Int
+     * @param $time | Int
      * 根据updated_at 更新时间，删除相应的url rewrite 记录
      */
     public function removeByUpdatedAt($time)
@@ -167,6 +178,7 @@ class RewriteMongodb implements RewriteInterface
             echo "delete complete \n";
         }
     }
+
     /**
      * 返回url rewrite model 对应的query
      */
@@ -174,6 +186,7 @@ class RewriteMongodb implements RewriteInterface
     {
         return $this->_urlRewriteModel->find();
     }
+
     /**
      * 返回url rewrite 查询结果
      */
@@ -181,6 +194,7 @@ class RewriteMongodb implements RewriteInterface
     {
         return $this->_urlRewriteModel->findOne($where);
     }
+
     /**
      * 返回url rewrite model
      */

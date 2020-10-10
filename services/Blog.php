@@ -1,5 +1,6 @@
 <?php
-/**
+
+/*
  * FecShop file.
  *
  * @link http://www.fecshop.com/
@@ -16,39 +17,39 @@ namespace fecshop\services;
  */
 class Blog extends Service
 {
-    protected function actionGetCategoryMenu()
+    public function getCategoryMenu()
     {
     }
 
-    protected function actionGetArticleList()
+    public function getArticleList()
     {
     }
 
-    protected function actionGetCategoryArticleList()
+    public function getCategoryArticleList()
     {
     }
 
-    protected function actionGetArticleById()
+    public function getArticleById()
     {
     }
 
-    protected function actionSaveArticle()
+    public function saveArticle()
     {
     }
 
-    protected function actionDeleteArticle()
+    public function deleteArticle()
     {
     }
 
-    protected function actionSaveCategory()
+    public function saveCategory()
     {
     }
 
-    protected function actionDeleteCategory()
+    public function deleteCategory()
     {
     }
 
-    protected function actionGetCategoryById()
+    public function getCategoryById()
     {
     }
 }
